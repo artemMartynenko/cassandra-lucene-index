@@ -1,5 +1,6 @@
 package com.stratio.cassandra.lucene.column;
 
+import com.google.common.collect.Lists;
 import com.stratio.cassandra.lucene.IndexException;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.SimpleDateType;
@@ -47,7 +48,12 @@ public class Column {
 
 
     public Column(String cell) {
-        this.cell = cell;
+        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+    }
+
+    public Column(String cell, Object value) {
+        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+        this.value = Optional.ofNullable(value);
     }
 
     public Column(String cell, String udt, String map, Object value) {
@@ -133,8 +139,66 @@ public class Column {
         return field.concat(map);
     }
 
+    /** Returns a [[Columns]] composed by this and the specified column. */
+    public Columns combine(Column column){
+        return new Columns(Lists.newArrayList(this, column));
+    }
 
-    //TODO: rewrite from scala `+` methods
+    /** Returns a [[Columns]] composed by this and the specified columns. */
+    public Columns combine(Columns columns){
+        List<Column> composed = Lists.newArrayList(columns.getColumns());
+        composed.add(this);
+        return new Columns(composed);
+    }
+
+
+    public String getCell() {
+        return cell;
+    }
+
+    public void setCell(String cell) {
+        this.cell = cell;
+    }
+
+    public String getUdt() {
+        return udt;
+    }
+
+    public void setUdt(String udt) {
+        this.udt = udt;
+    }
+
+    public String getMap() {
+        return map;
+    }
+
+    public void setMap(String map) {
+        this.map = map;
+    }
+
+    public Object getValue() {
+        return value.orElse(null);
+    }
+
+    public void setValue(Object value) {
+        this.value = Optional.ofNullable(value);
+    }
+
+    public String getMapper() {
+        return mapper;
+    }
+
+    public void setMapper(String mapper) {
+        this.mapper = mapper;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
 
     @Override
     public String toString() {
