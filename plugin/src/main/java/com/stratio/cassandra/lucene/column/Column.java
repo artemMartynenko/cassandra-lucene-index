@@ -14,11 +14,6 @@ import java.util.regex.Pattern;
 
 /**
  * A cell of a CQL3 logic column, which in most cases is different from a storage engine column.
- *
- * @param cell  the name of the base cell
- * @param udt   the UDT suffix
- * @param map   the map suffix
- * @param value the optional value
  * @author Andres de la Pena `adelapena@stratio.com`
  * @author Artem Martynenko
  **/
@@ -38,6 +33,13 @@ public class Column {
     private static final String MAP_SEPARATOR = "$";
     private static final String UDT_PATTERN = Pattern.quote(UDT_SEPARATOR);
 
+
+    /**
+     * @param cell  the name of the base cell
+     * @param udt   the UDT suffix
+     * @param map   the map suffix
+     * @param value the optional value
+     */
 
     private String cell;
     private String udt;

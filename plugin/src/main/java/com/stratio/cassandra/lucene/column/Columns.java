@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 /**
  * An immutable sorted list of CQL3 logic [[Column]]s.
  *
- * @param columns the [[Column]]s composing this
  * @author Andres de la Pena `adelapena@stratio.com`
  * @author Artem Martynenko artem7mag@gmai.com
  **/
@@ -20,6 +19,9 @@ public class Columns {
     private final List<Column> columns;
 
 
+    /**
+     * @param columns the [[Column]]s composing this
+     */
     public Columns(List<Column> columns) {
         this.columns = columns;
     }
