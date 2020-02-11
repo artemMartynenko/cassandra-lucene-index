@@ -1,14 +1,13 @@
 package com.stratio.cassandra.lucene.index;
 
+import com.stratio.cassandra.lucene.IndexException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
+import org.apache.lucene.util.QueryBuilder;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,6 +36,8 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
     private  List<Integer> offsets;
     private  boolean finished;
     private  boolean closed;
+    private List<ScoreDoc> afters;
+    private Sort sort;
 
 
     /**
@@ -77,21 +78,150 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
         this.offsets = cursors.stream().map(searcherManagerTermTuple -> 0).collect(Collectors.toList());
         this.finished = false;
         this.closed = false;
+        this.sort = sort();
+        this.afters = getAfters();
+    }
+
+
+
+    private void releaseSearchers(){
+        indices.forEach(i -> {
+            try {
+                managers.get(i).release(searchers.get(i));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /** The sort of the query rewritten by the searcher. */
+    private Sort sort(){
+        try {
+           return  querySort.rewrite(searchers.iterator().next());
+        }catch (Exception e){
+            releaseSearchers();
+            throw new IndexException(e, "Error rewriting sort "+ indexSort.toString());
+        }
+    }
+
+
+    private List<ScoreDoc> getAfters(){
+        try {
+        return indices.stream().map(i -> {
+             return Optional.of(afterTerms.get(i)).map(term ->{
+                  //TODO: add time benchmark for debug
+                    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+                    builder.add(new TermQuery(term), BooleanClause.Occur.FILTER);
+                    builder.add(query, BooleanClause.Occur.MUST);
+                    try {
+                        List<ScoreDoc> scores = Arrays.asList(searchers.get(i).search(builder.build(), 1, sort).scoreDocs);
+                        if(!scores.isEmpty()){
+                           return scores.iterator().next();
+                        }else {
+                            throw new IndexException("");
+                        }
+                    } catch (IOException e) {
+                        throw new IndexException("");
+                    }
+                }).get();
+            }).collect(Collectors.toList());
+
+        }catch (Exception e){
+            releaseSearchers();
+            throw new IndexException(e, "Error while searching for the last page position");
+        }
+    }
+
+    private void fetch() throws Exception {
+
+        try {
+          //TODO:add benchmark for debug
+          TopFieldDocs[] fieldDocs = indices.stream().map( i -> {
+              Term afterTerm = afterTerms.get(i);
+              if(afterTerm == null && EarlyTerminatingSortingCollector.canEarlyTerminate(sort, indexSort)){
+                  FieldDoc fieldDoc = (FieldDoc) Optional.of(afters.get(i)).orElse(null);
+                  TopFieldCollector collector = null;
+                  try {
+                      collector = TopFieldCollector.create(sort, pageSize, fieldDoc, true, false, false);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
+                  int hits = offsets.get(i) + pageSize;
+                  EarlyTerminatingSortingCollector earlyCollector = new EarlyTerminatingSortingCollector(collector, sort, hits, indexSort);
+                  try {
+                      searchers.get(i).search(query, earlyCollector);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
+                  TopFieldDocs topDocs = collector.topDocs();
+                  offsets.set(i, offsets.get(i) + topDocs.scoreDocs.length);
+                  return topDocs;
+              }else {
+                  try {
+                      return searchers.get(i).searchAfter(Optional.of(afters.get(i)).orElse(null), query, pageSize, sort,false, false);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
+              }
+          }).toArray(TopFieldDocs[]::new);
+
+            // Merge partitions results
+            ScoreDoc[] scoreDocs = TopDocs.merge(sort, pageSize, fieldDocs).scoreDocs;
+
+            int numFetched = scoreDocs.length;
+
+            finished = numFetched < pageSize;
+
+            for (ScoreDoc scoreDoc : scoreDocs){
+                int shard = scoreDoc.shardIndex;
+                afters.set(shard, scoreDoc);
+                Document document = searchers.get(shard).doc(scoreDoc.doc, fields);
+                documents.add(new Tuple<>(document,scoreDoc));
+            }
+
+        }catch (Exception e){
+            close();
+            throw new IndexException(e, "Error searching with "+query.toString()+" and "+sort.toString());
+        }
+        if (finished){
+            close();
+        }
+    }
+
+    public boolean needsFetch(){
+        return !finished && documents.isEmpty();
     }
 
 
     @Override
     public void close() throws Exception {
-
+        if(!closed){
+            try {
+                releaseSearchers();
+            }finally {
+                closed = true;
+            }
+        }
     }
 
     @Override
     public boolean hasNext() {
-        return false;
+        if(needsFetch()) {
+            try {
+                fetch();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return !documents.isEmpty();
     }
 
     @Override
     public Tuple<Document, ScoreDoc> next() {
-        return null;
+         if (hasNext()) {
+             return  documents.poll();
+         } else {
+             throw new NoSuchElementException();
+         }
     }
 }
