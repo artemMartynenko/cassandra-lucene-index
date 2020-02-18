@@ -4,14 +4,17 @@ import com.stratio.cassandra.lucene.IndexException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
-import org.apache.lucene.util.QueryBuilder;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**[[CloseableIterator]] for retrieving Lucene documents satisfying a query.
+import static com.stratio.cassandra.lucene.util.ThrowingWrapper.wrapc;
+import static com.stratio.cassandra.lucene.util.ThrowingWrapper.wrapf;
+
+/**
+ * [[CloseableIterator]] for retrieving Lucene documents satisfying a query.
+ *
  * @author Andres de la Pena `adelapena@stratio.com`
  * @author Artem Martynenko artem7mag@gmai.com
  **/
@@ -20,7 +23,7 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
     private static int MAX_PAGE_SIZE = 10000;
 
 
-    private  List<Tuple<SearcherManager, Term>> cursors;
+    private List<Tuple<SearcherManager, Term>> cursors;
     private Sort indexSort;
     private Sort querySort;
     private Query query;
@@ -28,14 +31,14 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
     private Set<String> fields;
 
     private int pageSize;
-    private LinkedList<Tuple<Document, ScoreDoc>>documents;
-    private  List<SearcherManager> managers;
-    private  List<Integer> indices;
-    private  List<IndexSearcher> searchers;
-    private  List<Term> afterTerms;
-    private  List<Integer> offsets;
-    private  boolean finished;
-    private  boolean closed;
+    private LinkedList<Tuple<Document, ScoreDoc>> documents;
+    private List<SearcherManager> managers;
+    private List<Integer> indices;
+    private List<IndexSearcher> searchers;
+    private List<Term> afterTerms;
+    private List<Integer> offsets;
+    private boolean finished;
+    private boolean closed;
     private List<ScoreDoc> afters;
     private Sort sort;
 
@@ -56,21 +59,15 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
         this.limit = limit;
         this.fields = fields;
 
-        this.pageSize =  Math.min(limit, MAX_PAGE_SIZE) + 1 ;
-        this.documents =  new LinkedList<>();
+        this.pageSize = Math.min(limit, MAX_PAGE_SIZE) + 1;
+        this.documents = new LinkedList<>();
         this.indices = IntStream.range(0, cursors.size()).boxed().collect(Collectors.toList());
-        this.managers =  cursors.stream()
+        this.managers = cursors.stream()
                 .map(searcherManagerTermTuple -> searcherManagerTermTuple._1)
                 .collect(Collectors.toList());
 
         this.searchers = managers.stream()
-                .map(searcherManager -> {
-                    try {
-                        return searcherManager.acquire();
-                    } catch (IOException e) {
-                        return null;
-                    }
-                }).collect(Collectors.toList());
+                .map(wrapf(SearcherManager::acquire)).collect(Collectors.toList());
 
         this.afterTerms = cursors.stream()
                 .map(searcherManagerTermTuple -> searcherManagerTermTuple._2)
@@ -83,50 +80,39 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
     }
 
 
-
-    private void releaseSearchers(){
-        indices.forEach(i -> {
-            try {
-                managers.get(i).release(searchers.get(i));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    private void releaseSearchers() {
+        indices.forEach(wrapc(i -> managers.get(i).release(searchers.get(i))));
     }
 
-    /** The sort of the query rewritten by the searcher. */
-    private Sort sort(){
+    /**
+     * The sort of the query rewritten by the searcher.
+     */
+    private Sort sort() {
         try {
-           return  querySort.rewrite(searchers.iterator().next());
-        }catch (Exception e){
+            return querySort.rewrite(searchers.iterator().next());
+        } catch (Exception e) {
             releaseSearchers();
-            throw new IndexException(e, "Error rewriting sort "+ indexSort.toString());
+            throw new IndexException(e, "Error rewriting sort " + indexSort.toString());
         }
     }
 
 
-    private List<ScoreDoc> getAfters(){
+    private List<ScoreDoc> getAfters() {
         try {
-        return indices.stream().map(i -> {
-             return Optional.of(afterTerms.get(i)).map(term ->{
-                  //TODO: add time benchmark for debug
-                    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-                    builder.add(new TermQuery(term), BooleanClause.Occur.FILTER);
-                    builder.add(query, BooleanClause.Occur.MUST);
-                    try {
-                        List<ScoreDoc> scores = Arrays.asList(searchers.get(i).search(builder.build(), 1, sort).scoreDocs);
-                        if(!scores.isEmpty()){
-                           return scores.iterator().next();
-                        }else {
-                            throw new IndexException("");
-                        }
-                    } catch (IOException e) {
-                        throw new IndexException("");
-                    }
-                }).get();
-            }).collect(Collectors.toList());
+            return indices.stream().map(i -> Optional.of(afterTerms.get(i)).map(wrapf(term -> {
+                //TODO: add time benchmark for debug
+                BooleanQuery.Builder builder = new BooleanQuery.Builder();
+                builder.add(new TermQuery(term), BooleanClause.Occur.FILTER);
+                builder.add(query, BooleanClause.Occur.MUST);
+                List<ScoreDoc> scores = Arrays.asList(searchers.get(i).search(builder.build(), 1, sort).scoreDocs);
+                if (!scores.isEmpty()) {
+                    return scores.iterator().next();
+                } else {
+                    throw new IndexException("");
+                }
+            })).get()).collect(Collectors.toList());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             releaseSearchers();
             throw new IndexException(e, "Error while searching for the last page position");
         }
@@ -135,35 +121,23 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
     private void fetch() throws Exception {
 
         try {
-          //TODO:add benchmark for debug
-          TopFieldDocs[] fieldDocs = indices.stream().map( i -> {
-              Term afterTerm = afterTerms.get(i);
-              if(afterTerm == null && EarlyTerminatingSortingCollector.canEarlyTerminate(sort, indexSort)){
-                  FieldDoc fieldDoc = (FieldDoc) Optional.of(afters.get(i)).orElse(null);
-                  TopFieldCollector collector = null;
-                  try {
-                      collector = TopFieldCollector.create(sort, pageSize, fieldDoc, true, false, false);
-                  } catch (IOException e) {
-                      throw new RuntimeException(e);
-                  }
-                  int hits = offsets.get(i) + pageSize;
-                  EarlyTerminatingSortingCollector earlyCollector = new EarlyTerminatingSortingCollector(collector, sort, hits, indexSort);
-                  try {
-                      searchers.get(i).search(query, earlyCollector);
-                  } catch (IOException e) {
-                      throw new RuntimeException(e);
-                  }
-                  TopFieldDocs topDocs = collector.topDocs();
-                  offsets.set(i, offsets.get(i) + topDocs.scoreDocs.length);
-                  return topDocs;
-              }else {
-                  try {
-                      return searchers.get(i).searchAfter(Optional.of(afters.get(i)).orElse(null), query, pageSize, sort,false, false);
-                  } catch (IOException e) {
-                      throw new RuntimeException(e);
-                  }
-              }
-          }).toArray(TopFieldDocs[]::new);
+            //TODO:add benchmark for debug
+            TopFieldDocs[] fieldDocs = indices.stream().map(wrapf(i -> {
+                Term afterTerm = afterTerms.get(i);
+                if (afterTerm == null && EarlyTerminatingSortingCollector.canEarlyTerminate(sort, indexSort)) {
+                    FieldDoc fieldDoc = (FieldDoc) Optional.of(afters.get(i)).orElse(null);
+                    TopFieldCollector collector = null;
+                    collector = TopFieldCollector.create(sort, pageSize, fieldDoc, true, false, false);
+                    int hits = offsets.get(i) + pageSize;
+                    EarlyTerminatingSortingCollector earlyCollector = new EarlyTerminatingSortingCollector(collector, sort, hits, indexSort);
+                    searchers.get(i).search(query, earlyCollector);
+                    TopFieldDocs topDocs = collector.topDocs();
+                    offsets.set(i, offsets.get(i) + topDocs.scoreDocs.length);
+                    return topDocs;
+                } else {
+                    return searchers.get(i).searchAfter(Optional.of(afters.get(i)).orElse(null), query, pageSize, sort, false, false);
+                }
+            })).toArray(TopFieldDocs[]::new);
 
             // Merge partitions results
             ScoreDoc[] scoreDocs = TopDocs.merge(sort, pageSize, fieldDocs).scoreDocs;
@@ -172,33 +146,33 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
 
             finished = numFetched < pageSize;
 
-            for (ScoreDoc scoreDoc : scoreDocs){
+            for (ScoreDoc scoreDoc : scoreDocs) {
                 int shard = scoreDoc.shardIndex;
                 afters.set(shard, scoreDoc);
                 Document document = searchers.get(shard).doc(scoreDoc.doc, fields);
-                documents.add(new Tuple<>(document,scoreDoc));
+                documents.add(new Tuple<>(document, scoreDoc));
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             close();
-            throw new IndexException(e, "Error searching with "+query.toString()+" and "+sort.toString());
+            throw new IndexException(e, "Error searching with " + query.toString() + " and " + sort.toString());
         }
-        if (finished){
+        if (finished) {
             close();
         }
     }
 
-    public boolean needsFetch(){
+    public boolean needsFetch() {
         return !finished && documents.isEmpty();
     }
 
 
     @Override
     public void close() throws Exception {
-        if(!closed){
+        if (!closed) {
             try {
                 releaseSearchers();
-            }finally {
+            } finally {
                 closed = true;
             }
         }
@@ -206,7 +180,7 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
 
     @Override
     public boolean hasNext() {
-        if(needsFetch()) {
+        if (needsFetch()) {
             try {
                 fetch();
             } catch (Exception e) {
@@ -218,10 +192,10 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
 
     @Override
     public Tuple<Document, ScoreDoc> next() {
-         if (hasNext()) {
-             return  documents.poll();
-         } else {
-             throw new NoSuchElementException();
-         }
+        if (hasNext()) {
+            return documents.poll();
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 }
