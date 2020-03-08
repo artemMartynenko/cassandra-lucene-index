@@ -14,6 +14,15 @@ public class Tuple<T1,T2> {
         _2 = t2;
     }
 
+
+    public T1 get_1() {
+        return _1;
+    }
+
+    public T2 get_2() {
+        return _2;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
