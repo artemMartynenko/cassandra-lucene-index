@@ -63,6 +63,10 @@ public class TokenLengthAnalyzer extends AnalyzerWrapper {
         return new TokenStreamComponents(components.getTokenizer(), tokenFilter);
     }
 
+    public Analyzer analyzer() {
+        return analyzer;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this).add("analyzer", analyzer).toString();
