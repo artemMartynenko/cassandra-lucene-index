@@ -38,6 +38,9 @@ public class Columns {
         return columns.isEmpty();
     }
 
+    public int size(){
+        return columns.size();
+    }
 
     public void forEach(Consumer<Column> procedure) {
         columns.forEach(procedure);
@@ -79,7 +82,7 @@ public class Columns {
     }
 
     /** Runs the specified function over each column with the specified field name. */
-    public void forEachWithMapper(String field, Consumer<Column> procedure) {
+    public void foreachWithMapper(String field, Consumer<Column> procedure) {
         String mapper = Column.parseMapperName(field);
         columns.forEach(column -> {
             if (column.getMapper().equals(mapper)) procedure.accept(column);
@@ -111,17 +114,17 @@ public class Columns {
         return helper.toString();
     }
 
-    static Columns empty = new Columns();
 
-    public static Columns apply(){
-        return empty;
+
+    public static Columns empty(){
+        return new Columns();
     }
 
-    public static Columns apply(Iterable<Column> columns){
+    public static Columns newColumns(Iterable<Column> columns){
         return new Columns(Lists.newArrayList(columns));
     }
 
-    public static Columns apply(Column... columns){
+    public static Columns newColumns(Column... columns){
         return new Columns(Lists.newArrayList(columns));
     }
 

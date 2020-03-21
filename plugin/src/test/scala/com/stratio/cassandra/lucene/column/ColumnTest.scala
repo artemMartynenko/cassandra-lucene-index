@@ -32,7 +32,7 @@ import org.scalatest.junit.JUnitRunner
 class ColumnTest extends BaseScalaTest {
 
   test("set default attributes") {
-    val column = Column("cell")
+    val column = new Column("cell")
     column.cell shouldBe "cell"
     column.mapper shouldBe "cell"
     column.field shouldBe "cell"
@@ -40,7 +40,7 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("set all attributes") {
-    val column = Column("cell")
+    val column = new Column("cell")
       .withUDTName("u1")
       .withUDTName("u2")
       .withMapName("m1")
@@ -53,10 +53,10 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("fieldName") {
-    Column("c").fieldName("f") shouldBe "f"
-    Column("c").withUDTName("u").fieldName("f") shouldBe "f"
-    Column("c").withMapName("m").fieldName("f") shouldBe "f$m"
-    Column("c").withUDTName("u").withMapName("m").fieldName("f") shouldBe "f$m"
+    new Column("c").fieldName("f") shouldBe "f"
+    new Column("c").withUDTName("u").fieldName("f") shouldBe "f"
+    new Column("c").withMapName("m").fieldName("f") shouldBe "f$m"
+    new Column("c").withUDTName("u").withMapName("m").fieldName("f") shouldBe "f$m"
   }
 
   test("parse cell name") {
@@ -84,22 +84,22 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("add column") {
-    Column("a") + Column("b") shouldBe Columns(Column("a"), Column("b"))
-    Column("b") + Column("a") shouldBe Columns(Column("b"), Column("a"))
+    new Column("a").combine(new Column("b")) shouldBe Columns.newColumns(new Column("a"), new Column("b"))
+    new Column("b").combine(new Column("a")) shouldBe Columns.newColumns(new Column("b"), new Column("a"))
   }
 
   test("add columns") {
-    Column("a") + Columns(Column("b"), Column("c")) shouldBe
-      Columns(Column("a"), Column("b"), Column("c"))
+    new Column("a").combine(Columns.newColumns(new Column("b"), new Column("c"))) shouldBe
+      Columns.newColumns(new Column("a"), new Column("b"), new Column("c"))
   }
 
   test("toString with default attributes") {
-    Column("cell").toString shouldBe
+    new Column("cell").toString shouldBe
       s"Column{cell=cell, field=cell, value=None}"
   }
 
   test("toString with all attributes") {
-    Column("cell")
+    new Column("cell")
       .withUDTName("u1")
       .withUDTName("u2")
       .withMapName("m1")
@@ -129,21 +129,21 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("with composed value") {
-    Column("c").withValue(ascii.decompose("aB"), ascii) shouldBe Column("c").withValue("aB")
-    Column("c").withValue(utf8.decompose("aB"), utf8) shouldBe Column("c").withValue("aB")
-    Column("c").withValue(byte.decompose(2.toByte), byte) shouldBe Column("c").withValue(2.toByte)
-    Column("c").withValue(short.decompose(2.toShort), short) shouldBe Column("c").withValue(2.toShort)
-    Column("c").withValue(int32.decompose(2), int32) shouldBe Column("c").withValue(2)
-    Column("c").withValue(long.decompose(2l), long) shouldBe Column("c").withValue(2l)
-    Column("c").withValue(float.decompose(2.1f), float) shouldBe Column("c").withValue(2.1f)
-    Column("c").withValue(double.decompose(2.1d), double) shouldBe Column("c").withValue(2.1d)
+    new Column("c").withValue(ascii.decompose("aB"), ascii) shouldBe new Column("c").withValue("aB")
+    new Column("c").withValue(utf8.decompose("aB"), utf8) shouldBe new Column("c").withValue("aB")
+    new Column("c").withValue(byte.decompose(2.toByte), byte) shouldBe new Column("c").withValue(2.toByte)
+    new Column("c").withValue(short.decompose(2.toShort), short) shouldBe new Column("c").withValue(2.toShort)
+    new Column("c").withValue(int32.decompose(2), int32) shouldBe new Column("c").withValue(2)
+    new Column("c").withValue(long.decompose(2l), long) shouldBe new Column("c").withValue(2l)
+    new Column("c").withValue(float.decompose(2.1f), float) shouldBe new Column("c").withValue(2.1f)
+    new Column("c").withValue(double.decompose(2.1d), double) shouldBe new Column("c").withValue(2.1d)
   }
 
   test("with value") {
-    Column("c").withValue(null) shouldBe Column("c")
-    Column("c").withValue(3).withValue(null) shouldBe Column("c")
-    Column("c").withValue(3).withValue(4) shouldBe Column("c").withValue(4)
-    Column("c").withValue(null).withValue(3) shouldBe Column("c").withValue(3)
-    Column("c").withValue(3).withValue(3) shouldBe Column("c").withValue(3)
+    new Column("c").withValue(null) shouldBe new Column("c")
+    new Column("c").withValue(3).withValue(null) shouldBe new Column("c")
+    new Column("c").withValue(3).withValue(4) shouldBe new Column("c").withValue(4)
+    new Column("c").withValue(null).withValue(3) shouldBe new Column("c").withValue(3)
+    new Column("c").withValue(3).withValue(3) shouldBe new Column("c").withValue(3)
   }
 }

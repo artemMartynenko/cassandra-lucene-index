@@ -15,7 +15,6 @@ import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.serializers.CollectionSerializer;
 import org.apache.cassandra.transport.ProtocolVersion;
 import org.apache.cassandra.utils.ByteBufferUtil;
-import scala.util.control.Exception;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -35,7 +34,7 @@ public class ColumnsMapper {
      * @param cell a cell
      */
     static Columns columns(Cell cell){
-        if(cell == null) return Columns.apply();
+        if(cell == null) return Columns.empty();
         String name = cell.column().name.toString();
         AbstractType<?> comparator = cell.column().type;
         ByteBuffer value = cell.value();
@@ -84,7 +83,7 @@ public class ColumnsMapper {
         }else if(serializer instanceof TupleType){
             return columns(column, (TupleType) serializer, value);
         }else {
-            return Columns.apply(column.withValue(value, serializer));
+            return Columns.newColumns(column.withValue(value, serializer));
         }
     }
 
@@ -92,7 +91,7 @@ public class ColumnsMapper {
     static Columns columns(Column column, SetType<?> set, ByteBuffer value){
         AbstractType<?> nameType = set.nameComparator();
         ByteBuffer bb = ByteBufferUtil.clone(value);
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for(int i = 0 ; i < frozenCollectionSize(bb); i++){
             ByteBuffer itemValue = frozenCollectionValue(bb);
             columns = columns.copyAndCombine(columns(column, nameType, itemValue));
@@ -104,7 +103,7 @@ public class ColumnsMapper {
         AbstractType<?> valueType = list.valueComparator();
         ByteBuffer bb = ByteBufferUtil.clone(value);
         //TODO: rewrite columns class for making less copies
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for (int i = 0; i < frozenCollectionSize(bb); i++) {
             ByteBuffer itemValue = frozenCollectionValue(bb);
             columns = columns.copyAndCombine(columns(column, valueType, itemValue));
@@ -117,7 +116,7 @@ public class ColumnsMapper {
         AbstractType<?> itemKeysType = map.nameComparator();
         AbstractType<?> itemValuesType = map.valueComparator();
         ByteBuffer bb = ByteBufferUtil.clone(value);
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for (int i = 0; i < frozenCollectionSize(bb); i++) {
             ByteBuffer itemKey = frozenCollectionValue(bb);
             ByteBuffer itemValue = frozenCollectionValue(bb);
@@ -132,7 +131,7 @@ public class ColumnsMapper {
 
     static Columns columns(Column column, UserType udt, ByteBuffer value){
         ByteBuffer[] itemValues = udt.split(value);
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for (int i = 0; i < udt.fieldNames().size(); i++) {
             ByteBuffer itemValue = itemValues[i];
             if(itemValue != null){
@@ -152,7 +151,7 @@ public class ColumnsMapper {
 
     static Columns columns(Column column, TupleType tupleType, ByteBuffer value){
       ByteBuffer[] itemValues = tupleType.split(value);
-      Columns columns = Columns.apply();
+      Columns columns = Columns.empty();
       for (int i = 0; i < tupleType.size(); i++){
           ByteBuffer itemValue = itemValues[i];
           if(itemValue != null){
@@ -225,7 +224,7 @@ public class ColumnsMapper {
         }else {
             components = new ByteBuffer[]{key.getKey()};
         }
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for(ColumnDefinition definition: keyColumns){
             String name = definition.name.toString();
             ByteBuffer value = components[definition.position()];
@@ -238,7 +237,7 @@ public class ColumnsMapper {
 
     /** Returns the mapped {@link Columns} contained in the specified clustering key. */
     Columns columns(Clustering clustering){
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for(ColumnDefinition definition: clusteringColumns){
             columns = columns.copyAndCombine(ColumnsMapper.columns(Column.apply(definition.name.toString()), definition.type, clustering.get(definition.position())));
         }
@@ -253,7 +252,7 @@ public class ColumnsMapper {
      * @param now now in seconds
      */
     Columns columns(Row row, int now){
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for (ColumnDefinition definition: row.columns()) {
             if(definition.isComplex()){
                columns = this.columns(row.getComplexColumnData(definition), now).copyAndCombine(columns);
@@ -272,7 +271,7 @@ public class ColumnsMapper {
      * @param now               now in seconds
      */
     Columns columns(ComplexColumnData complexColumnData, int now){
-        Columns columns = Columns.apply();
+        Columns columns = Columns.empty();
         for (Iterator<Cell> it = complexColumnData.iterator(); it.hasNext(); ) {
             Cell cell = it.next();
             columns = columns.copyAndCombine(columns(cell,now));
@@ -288,7 +287,7 @@ public class ColumnsMapper {
      */
     Columns columns(Cell cell, int now){
         if(cell.isTombstone() || cell.localDeletionTime() <= now || !mappedCells.contains(cell.column().name.toString())){
-            return Columns.apply();
+            return Columns.empty();
         }else {
             return  ColumnsMapper.columns(cell);
         }

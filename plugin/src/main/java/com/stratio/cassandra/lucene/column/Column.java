@@ -41,12 +41,12 @@ public class Column {
      * @param value the optional value
      */
 
-    private String cell;
-    private String udt;
-    private String map;
-    private Optional<?> value;
-    private String mapper;
-    private String field;
+    public String cell;
+    public String udt;
+    public String map;
+    public Optional<?> value;
+    public String mapper;
+    public String field;
 
 
     public Column(String cell) {
@@ -67,7 +67,7 @@ public class Column {
         this.field = mapper.concat(map);
     }
 
-    public static Column apply(String cell) {
+    public static Column column(String cell) {
         return new Column(cell);
     }
 

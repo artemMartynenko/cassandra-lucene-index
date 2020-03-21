@@ -27,49 +27,49 @@ import org.scalatest.junit.JUnitRunner
 class ColumnsTest extends BaseScalaTest {
 
   test("build empty") {
-    val columns = Columns()
-    columns.size shouldBe 0
-    columns.isEmpty shouldBe true
+    val columns = new Columns()
+    columns.size() shouldBe 0
+    columns.isEmpty() shouldBe true
   }
 
   test("build with columns") {
-    val columns = Columns(Column("c1"), Column("c2"))
-    columns.size shouldBe 2
-    columns.isEmpty shouldBe false
+    val columns = Columns.newColumns(new Column("c1"), new Column("c2"))
+    columns.size() shouldBe 2
+    columns.isEmpty() shouldBe false
   }
 
   test("foreach with mapper") {
-    val columns = Columns(
-      Column("c1"),
-      Column("c1").withUDTName("u1"),
-      Column("c1").withMapName("m1"),
-      Column("c1").withUDTName("u1").withMapName("m1"),
-      Column("c2"),
-      Column("c2").withUDTName("u1"),
-      Column("c2").withMapName("m1"),
-      Column("c2").withUDTName("u1").withMapName("m12"))
+    val columns = Columns.newColumns(
+      new Column("c1"),
+      new Column("c1").withUDTName("u1"),
+      new Column("c1").withMapName("m1"),
+      new Column("c1").withUDTName("u1").withMapName("m1"),
+      new Column("c2"),
+      new Column("c2").withUDTName("u1"),
+      new Column("c2").withMapName("m1"),
+      new Column("c2").withUDTName("u1").withMapName("m12"))
 
-    var cols1 = Columns()
-    columns.foreachWithMapper("c1")(c => cols1 += c)
-    cols1 shouldBe Columns(Column("c1"), Column("c1").withMapName("m1"))
+    var cols1 = Columns.empty()
+    columns.foreachWithMapper("c1", c => cols1 += c )
+    cols1 shouldBe Columns.newColumns(new Column("c1"), new Column("c1").withMapName("m1"))
 
-    var cols2 = Columns()
-    columns.foreachWithMapper("c1.u1")(c => cols2 += c)
-    cols2 shouldBe Columns(
-      Column("c1").withUDTName("u1"),
-      Column("c1").withUDTName("u1").withMapName("m1"))
+    var cols2 = Columns.empty()
+    columns.foreachWithMapper("c1.u1", c => cols2 += c)
+    cols2 shouldBe Columns.newColumns(
+      new Column("c1").withUDTName("u1"),
+      new Column("c1").withUDTName("u1").withMapName("m1"))
   }
 
   test("value for field") {
-    val columns = Columns() +
-      Column("c1").withValue(1) +
-      Column("c1").withUDTName("u1").withValue(2) +
-      Column("c1").withMapName("m1").withValue(3) +
-      Column("c1").withUDTName("u1").withMapName("m1").withValue(4) +
-      Column("c2").withValue(5) +
-      Column("c2").withUDTName("u1").withValue(6) +
-      Column("c2").withMapName("m1").withValue(7) +
-      Column("c2").withUDTName("u1").withMapName("m1").withValue(8)
+    val columns = Columns.newColumns(
+      new Column("c1").withValue(1),
+      new Column("c1").withUDTName("u1").withValue(2) ,
+      new Column("c1").withMapName("m1").withValue(3) ,
+      new Column("c1").withUDTName("u1").withMapName("m1").withValue(4),
+      new Column("c2").withValue(5),
+      new Column("c2").withUDTName("u1").withValue(6),
+      new Column("c2").withMapName("m1").withValue(7),
+      new Column("c2").withUDTName("u1").withMapName("m1").withValue(8))
     columns.valueForField("c1") shouldBe 1
     columns.valueForField("c1.u1") shouldBe 2
     columns.valueForField("c1$m1") shouldBe 3
@@ -81,33 +81,33 @@ class ColumnsTest extends BaseScalaTest {
   }
 
   test("prepend column") {
-    Column("c1") :: Columns(Column("c2")) shouldBe Columns(Column("c1"), Column("c2"))
+    Columns.newColumns( new Column("c2")).copyWithHead(new Column("c1"))   shouldBe Columns.newColumns(new  Column("c1"), new  Column("c2"))
   }
 
   test("sum column") {
-    Columns(Column("c1")) + Column("c2") shouldBe Columns(Column("c1"), Column("c2"))
+    Columns.newColumns(new Column("c1")).copyWithTail(new Column("c2")) shouldBe Columns.newColumns(new  Column("c1"), new Column("c2"))
   }
 
   test("sum columns") {
-    Columns(Column("c1")) ++ Columns(Column("c2")) shouldBe Columns(Column("c1"), Column("c2"))
+    Columns.newColumns(new Column("c1")).copyAndCombine(Columns.newColumns(new Column("c2"))) shouldBe Columns.newColumns(new Column("c1"), new  Column("c2"))
   }
 
   test("add column without value") {
-    Columns(Column("c1")).add("c2") shouldBe Columns(Column("c1"), Column("c2"))
+    Columns.newColumns(new Column("c1")).add("c2") shouldBe Columns.newColumns(new  Column("c1"), new  Column("c2"))
   }
 
   test("add column with value") {
-    Columns(Column("c1")).add("c2", 1) shouldBe Columns(Column("c1"), Column("c2").withValue(1))
+    Columns.newColumns(new Column("c1")).add("c2", 1) shouldBe Columns.newColumns(new  Column("c1"), new  Column("c2").withValue(1))
   }
 
   test("toString empty") {
-    Columns().toString shouldBe "Columns{}"
+    new Columns().toString shouldBe "Columns{}"
   }
 
   test("toString with columns") {
-    val columns = Columns(
-      Column("c1"),
-      Column("c2").withUDTName("u1").withMapName("m1").withValue(7))
+    val columns = Columns.newColumns(
+      new  Column("c1"),
+      new  Column("c2").withUDTName("u1").withMapName("m1").withValue(7))
     columns.toString shouldBe "Columns{c1=None, c2.u1$m1=Some(7)}"
   }
 }
