@@ -150,6 +150,18 @@ public class PartitionedIndex {
     }
 
 
+    /** Optimizes the index forcing merge of all segments that have deleted documents.
+     * This operation may block until all merging completes.
+     *
+     * @param doWait `true` if the call should block until the operation completes
+     */
+    public void  forceMergeDeletes(boolean doWait) {
+        LOGGER.info("Merging {} segments with deletions", name);
+        indexes.forEach(fsIndex -> fsIndex.forceMergeDeletes(doWait));
+        LOGGER.info("Merged ${} segments with deletions", name);
+    }
+
+
     /**
       * Refreshes the index readers.
       */

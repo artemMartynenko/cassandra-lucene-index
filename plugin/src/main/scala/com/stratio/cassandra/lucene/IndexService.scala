@@ -70,7 +70,7 @@ abstract class IndexService(
   val tokenMapper = new TokenMapper
   val partitionMapper = new PartitionMapper(metadata)
   val columnsMapper = new ColumnsMapper(schema, metadata)
-  val expressionMapper = ExpressionMapper(metadata, indexMetadata)
+  val expressionMapper = new ExpressionMapper(metadata, indexMetadata)
 
   // Setup FS index and write queue
   val queue = TaskQueue.build(options.indexingThreads, options.indexingQueuesSize)
