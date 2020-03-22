@@ -38,7 +38,7 @@ public class ColumnsMapper {
         String name = cell.column().name.toString();
         AbstractType<?> comparator = cell.column().type;
         ByteBuffer value = cell.value();
-        Column column = Column.apply(name);
+        Column column = Column.of(name);
 
         if(comparator instanceof SetType && !comparator.isFrozenCollection() ){
             AbstractType<?> itemComparator = ((SetType<?>) comparator).nameComparator();
@@ -55,7 +55,7 @@ public class ColumnsMapper {
             Column keyColumn = column.withUDTName(Column.MAP_KEY_SUFFIX).withValue(keyValue, keyType);
             Columns valueColumn = columns(column.withUDTName(Column.MAP_KEY_SUFFIX), valueType, value);
             Columns entryColumn = columns(column.withMapName(keyName), valueType , value);
-            return keyColumn.combine(valueColumn).copyAndCombine(entryColumn);
+            return keyColumn.at(valueColumn).plus(entryColumn);
         }else if(comparator instanceof UserType){
             CellPath cellPath = cell.path();
             if (cellPath == null){
@@ -83,7 +83,7 @@ public class ColumnsMapper {
         }else if(serializer instanceof TupleType){
             return columns(column, (TupleType) serializer, value);
         }else {
-            return Columns.newColumns(column.withValue(value, serializer));
+            return Columns.of(column.withValue(value, serializer));
         }
     }
 
@@ -94,7 +94,7 @@ public class ColumnsMapper {
         Columns columns = Columns.empty();
         for(int i = 0 ; i < frozenCollectionSize(bb); i++){
             ByteBuffer itemValue = frozenCollectionValue(bb);
-            columns = columns.copyAndCombine(columns(column, nameType, itemValue));
+            columns = columns.plus(columns(column, nameType, itemValue));
         }
         return columns;
     }
@@ -106,7 +106,7 @@ public class ColumnsMapper {
         Columns columns = Columns.empty();
         for (int i = 0; i < frozenCollectionSize(bb); i++) {
             ByteBuffer itemValue = frozenCollectionValue(bb);
-            columns = columns.copyAndCombine(columns(column, valueType, itemValue));
+            columns = columns.plus(columns(column, valueType, itemValue));
         }
         return columns;
     }
@@ -124,7 +124,7 @@ public class ColumnsMapper {
             Column keyColumn = column.withUDTName(Column.MAP_KEY_SUFFIX).withValue(itemKey, itemKeysType);
             Columns valueColumn = columns(column.withUDTName(Column.MAP_KEY_SUFFIX), itemValuesType, itemValue);
             Columns entryColumn = columns(column.withMapName(itemName), itemValuesType, itemValue);
-            columns = keyColumn.combine(valueColumn).copyAndCombine(entryColumn).copyAndCombine(columns);
+            columns = keyColumn.at(valueColumn).plus(entryColumn).plus(columns);
         }
         return columns;
     }
@@ -138,7 +138,7 @@ public class ColumnsMapper {
                 String itemName = udt.fieldNameAsString(i);
                 AbstractType<?> itemType = udt.fieldType(i);
                 Column itemColumn =column.withUDTName(itemName);
-                columns = columns(itemColumn, itemType, itemValue).copyAndCombine(columns);
+                columns = columns(itemColumn, itemType, itemValue).plus(columns);
             }
         }
         return columns;
@@ -158,7 +158,7 @@ public class ColumnsMapper {
               String itemName = String.valueOf(i);
               AbstractType<?> itemType = tupleType.type(i);
               Column itemColumn = column.withUDTName(itemName);
-              columns = columns(itemColumn, itemType, itemValue).copyAndCombine(columns);
+              columns = columns(itemColumn, itemType, itemValue).plus(columns);
           }
       }
       return columns;
@@ -212,7 +212,7 @@ public class ColumnsMapper {
      * @param now now in seconds
      */
     public Columns columns(DecoratedKey key, Row row, int now){
-       return columns(key).copyAndCombine(columns(row.clustering())).copyAndCombine(columns(row,now));
+       return columns(key).plus(columns(row.clustering())).plus(columns(row,now));
     }
 
 
@@ -229,7 +229,7 @@ public class ColumnsMapper {
             String name = definition.name.toString();
             ByteBuffer value = components[definition.position()];
             AbstractType<?> valueType = definition.cellValueType();
-            columns = columns.copyWithHead(new Column(name).withValue(value,valueType));
+            columns = columns.plusToHead(new Column(name).withValue(value,valueType));
         }
         return columns;
     }
@@ -239,7 +239,7 @@ public class ColumnsMapper {
     Columns columns(Clustering clustering){
         Columns columns = Columns.empty();
         for(ColumnDefinition definition: clusteringColumns){
-            columns = columns.copyAndCombine(ColumnsMapper.columns(Column.apply(definition.name.toString()), definition.type, clustering.get(definition.position())));
+            columns = columns.plus(ColumnsMapper.columns(Column.of(definition.name.toString()), definition.type, clustering.get(definition.position())));
         }
         return columns;
     }
@@ -255,9 +255,9 @@ public class ColumnsMapper {
         Columns columns = Columns.empty();
         for (ColumnDefinition definition: row.columns()) {
             if(definition.isComplex()){
-               columns = this.columns(row.getComplexColumnData(definition), now).copyAndCombine(columns);
+               columns = this.columns(row.getComplexColumnData(definition), now).plus(columns);
             }else {
-                columns = this.columns(row.getCell(definition), now).copyAndCombine(columns);
+                columns = this.columns(row.getCell(definition), now).plus(columns);
             }
         }
         return columns;
@@ -274,7 +274,7 @@ public class ColumnsMapper {
         Columns columns = Columns.empty();
         for (Iterator<Cell> it = complexColumnData.iterator(); it.hasNext(); ) {
             Cell cell = it.next();
-            columns = columns.copyAndCombine(columns(cell,now));
+            columns = columns.plus(columns(cell,now));
         }
         return columns;
     }

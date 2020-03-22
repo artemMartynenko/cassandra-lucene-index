@@ -49,7 +49,7 @@ public class Columns {
     /**
      * Returns a copy of this with the specified column prepended in O(1) time.
      */
-    public Columns copyWithHead(Column column) {
+    public Columns plusToHead(Column column) {
         List<Column> newList = Lists.newArrayList(column);
         newList.addAll(columns);
         return new Columns(newList);
@@ -59,7 +59,7 @@ public class Columns {
     /**
      * Returns a copy of this with the specified column appended in O(n) time.
      */
-    public Columns copyWithTail(Column column) {
+    public Columns plus(Column column) {
         List<Column> newList = Lists.newArrayList(columns);
         newList.add(column);
         return new Columns(newList);
@@ -68,7 +68,7 @@ public class Columns {
     /**
      * Returns a copy of this with the specified columns appended.
      */
-    public Columns copyAndCombine(Columns columns) {
+    public Columns plus(Columns columns) {
         List<Column> newList = Lists.newArrayList(this.columns);
         newList.addAll(columns.columns);
         return new Columns(newList);
@@ -120,11 +120,11 @@ public class Columns {
         return new Columns();
     }
 
-    public static Columns newColumns(Iterable<Column> columns){
+    public static Columns of(Iterable<Column> columns){
         return new Columns(Lists.newArrayList(columns));
     }
 
-    public static Columns newColumns(Column... columns){
+    public static Columns of(Column... columns){
         return new Columns(Lists.newArrayList(columns));
     }
 

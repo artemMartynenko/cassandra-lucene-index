@@ -84,13 +84,13 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("add column") {
-    new Column("a").combine(new Column("b")) shouldBe Columns.newColumns(new Column("a"), new Column("b"))
-    new Column("b").combine(new Column("a")) shouldBe Columns.newColumns(new Column("b"), new Column("a"))
+    new Column("a").at(new Column("b")) shouldBe Columns.of(new Column("a"), new Column("b"))
+    new Column("b").at(new Column("a")) shouldBe Columns.of(new Column("b"), new Column("a"))
   }
 
   test("add columns") {
-    new Column("a").combine(Columns.newColumns(new Column("b"), new Column("c"))) shouldBe
-      Columns.newColumns(new Column("a"), new Column("b"), new Column("c"))
+    new Column("a").at(Columns.of(new Column("b"), new Column("c"))) shouldBe
+      Columns.of(new Column("a"), new Column("b"), new Column("c"))
   }
 
   test("toString with default attributes") {

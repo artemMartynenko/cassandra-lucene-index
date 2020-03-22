@@ -43,7 +43,7 @@ class FSIndexTest extends BaseScalaTest {
 
   def assertCount(docs: DocumentIterator, expected: Int) {
     var count = 0
-    docs.foreach(_ => count += 1)
+    docs.forEach(_ => count += 1)
     assertEquals("Expected " + expected + " documents", expected, count)
   }
 

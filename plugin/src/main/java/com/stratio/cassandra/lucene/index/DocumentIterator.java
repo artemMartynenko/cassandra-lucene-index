@@ -6,6 +6,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -18,7 +19,7 @@ import static com.stratio.cassandra.lucene.util.ThrowingWrapper.wrapf;
  * @author Andres de la Pena `adelapena@stratio.com`
  * @author Artem Martynenko artem7mag@gmai.com
  **/
-public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, AutoCloseable {
+public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Iterator<Tuple<Document, ScoreDoc>>, AutoCloseable {
 
     private static int MAX_PAGE_SIZE = 10000;
 
@@ -198,4 +199,10 @@ public class DocumentIterator implements Iterator<Tuple<Document, ScoreDoc>>, Au
             throw new NoSuchElementException();
         }
     }
+
+    @Override
+    public Iterator<Tuple<Document, ScoreDoc>> iterator() {
+        return this;
+    }
+
 }

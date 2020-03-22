@@ -85,7 +85,7 @@ object SchemaValidator {
     if (udtNames.isEmpty) {
       checkSupported(cellType, cellName, supportsCollections)
     } else {
-      var column = Column.apply(cellName)
+      var column = Column.of(cellName)
       var currentType = cellType
       for (i <- udtNames.indices) {
         column = column.withUDTName(udtNames(i))

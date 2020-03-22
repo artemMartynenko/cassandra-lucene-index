@@ -34,40 +34,7 @@ public class Column {
     private static final String UDT_PATTERN = Pattern.quote(UDT_SEPARATOR);
 
 
-    /**
-     * @param cell  the name of the base cell
-     * @param udt   the UDT suffix
-     * @param map   the map suffix
-     * @param value the optional value
-     */
-
-    public String cell;
-    public String udt;
-    public String map;
-    public Optional<?> value;
-    public String mapper;
-    public String field;
-
-
-    public Column(String cell) {
-        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
-    }
-
-    public Column(String cell, Object value) {
-        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
-        this.value = Optional.ofNullable(value);
-    }
-
-    public Column(String cell, String udt, String map, Object value) {
-        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
-        this.udt = Optional.ofNullable(udt).orElse("");
-        this.map = Optional.ofNullable(map).orElse("");
-        this.value = Optional.ofNullable(value);
-        this.mapper = cell.concat(udt);
-        this.field = mapper.concat(map);
-    }
-
-    public static Column column(String cell) {
+    public static Column of(String cell) {
         return new Column(cell);
     }
 
@@ -106,6 +73,39 @@ public class Column {
         }
     }
 
+
+
+    public String cell;
+    public String udt;
+    public String map;
+    public Optional<?> value;
+    public String mapper;
+    public String field;
+
+    /**
+     * @param cell  the name of the base cell
+     * @param udt   the UDT suffix
+     * @param map   the map suffix
+     * @param value the optional value
+     */
+    public Column(String cell, String udt, String map, Object value) {
+        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+        this.udt = Optional.ofNullable(udt).orElse("");
+        this.map = Optional.ofNullable(map).orElse("");
+        this.value = Optional.ofNullable(value);
+        this.mapper = cell.concat(udt);
+        this.field = mapper.concat(map);
+    }
+
+    public Column(String cell) {
+        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+    }
+
+    public Column(String cell, Object value) {
+        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+        this.value = Optional.ofNullable(value);
+    }
+
     /** Returns `true` if the value is not defined, `false` otherwise. */
     public boolean isEmpty() {
         return !value.isPresent();
@@ -141,13 +141,13 @@ public class Column {
         return field.concat(map);
     }
 
-    /** Returns a [[Columns]] composed by this and the specified column. */
-    public Columns combine(Column column){
+    /** Returns a {@link Columns} composed by this and the specified column. */
+    public Columns at(Column column){
         return new Columns(Lists.newArrayList(this, column));
     }
 
-    /** Returns a [[Columns]] composed by this and the specified columns. */
-    public Columns combine(Columns columns){
+    /** Returns a {@link Columns} composed by this and the specified columns. */
+    public Columns at(Columns columns){
         List<Column> composed = Lists.newArrayList(columns.getColumns());
         composed.add(this);
         return new Columns(composed);

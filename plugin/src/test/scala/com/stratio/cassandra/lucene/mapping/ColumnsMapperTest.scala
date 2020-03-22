@@ -41,9 +41,9 @@ class ColumnsMapperTest extends BaseScalaTest {
 
   test("columns from plain cells") {
     def test[A](abstractType: AbstractType[A], value: A) = {
-      val column = Column("cell")
+      val column = Column.of("cell")
       columns(column, abstractType, abstractType.decompose(value)) shouldBe
-        Columns(column.withValue(value))
+        Columns.of(column.withValue(value))
     }
     test(ascii, "Ab")
     test(utf8, "Ab")
@@ -61,25 +61,25 @@ class ColumnsMapperTest extends BaseScalaTest {
   }
 
   test("columns from frozen set") {
-    val column = Column("cell")
+    val column = Column.of("cell")
     val `type` = set(utf8, multiCell = false)
     val bb = `type`.decompose(Set("a", "b").asJava)
-    columns(column, `type`, bb) shouldBe Columns(column.withValue("b"), column.withValue("a"))
+    columns(column, `type`, bb) shouldBe Columns.of(column.withValue("b"), column.withValue("a"))
   }
 
   test("columns from frozen list") {
-    val column = Column("cell")
+    val column = Column.of("cell")
     val `type` = list(utf8, multiCell = false)
     val bb = `type`.decompose(List("a", "b").asJava)
-    columns(column, `type`, bb) shouldBe Columns(column.withValue("b"), column.withValue("a"))
+    columns(column, `type`, bb) shouldBe Columns.of(column.withValue("b"), column.withValue("a"))
   }
 
   test("columns from frozen map") {
-    val column = Column("cell")
+    val column = Column.of("cell")
     val `type` = map(utf8, utf8, multiCell = true)
     val bb = `type`.decompose(Map("k1" -> "v1", "k2" -> "v2").asJava)
     columns(column, `type`, bb) shouldBe
-      Columns(
+      Columns.of(
         column.withUDTName(Column.MAP_KEY_SUFFIX).withValue("k2"),
         column.withUDTName(Column.MAP_VALUE_SUFFIX).withValue("v2"),
         column.withMapName("k2").withValue("v2"),
@@ -89,19 +89,19 @@ class ColumnsMapperTest extends BaseScalaTest {
   }
 
   test("columns from tuple") {
-    val column = Column("cell")
+    val column = Column.of("cell")
     val `type` = new TupleType(Lists.newArrayList(utf8, utf8))
     val bb = TupleType.buildValue(Array(utf8.decompose("a"), utf8.decompose("b")))
     columns(column, `type`, bb) shouldBe
-      Columns(column.withUDTName("0").withValue("a"), column.withUDTName("1").withValue("b"))
+      Columns.of(column.withUDTName("0").withValue("a"), column.withUDTName("1").withValue("b"))
   }
 
   test("columns from UDT") {
-    val column = Column("cell")
+    val column = Column.of("cell")
     val `type` = udt(List("a", "b"), List(utf8, utf8))
     val bb = TupleType.buildValue(Array(utf8.decompose("1"), utf8.decompose("2")))
     columns(column, `type`, bb) shouldBe
-      Columns(column.withUDTName("a").withValue("1"), column.withUDTName("b").withValue("2"))
+      Columns.of(column.withUDTName("a").withValue("1"), column.withUDTName("b").withValue("2"))
   }
 
   test("columns from regular cell") {
@@ -113,6 +113,6 @@ class ColumnsMapperTest extends BaseScalaTest {
       Cell.NO_DELETION_TIME,
       utf8.decompose("a"),
       null)
-    columns(cell) shouldBe Columns(Column("cell").withValue("a"))
+    columns(cell) shouldBe Columns.of(Column.of("cell").withValue("a"))
   }
 }
