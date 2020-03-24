@@ -27,30 +27,30 @@ import org.scalatest.junit.JUnitRunner
 class PartitionerOnTokenTest extends PartitionerTest {
 
   test("build with zero partitions") {
-    assertThrows[IndexException] {PartitionerOnToken(0)}
+    assertThrows[IndexException] {new PartitionerOnToken(0)}
   }
 
   test("build with negative partitions") {
-    assertThrows[IndexException] {PartitionerOnToken(-1)}
+    assertThrows[IndexException] {new PartitionerOnToken(-1)}
   }
 
   test("parse JSON") {
     val json = "{type:\"token\", partitions: 10}"
-    Partitioner.fromJson(json) shouldBe PartitionerOnToken.Builder(10)
+    Partitioner.fromJson(json) shouldBe new PartitionerOnToken.Builder(10)
   }
 
   test("num partitions") {
-    PartitionerOnToken(4).numPartitions shouldBe 4
+    new PartitionerOnToken(4).numPartitions shouldBe 4
   }
 
   test("key partition with 1 partition") {
     for (i <- 1 to 10) {
-      PartitionerOnToken(1).partition(key(i)) shouldBe 0
+      new PartitionerOnToken(1).partition(key(i)) shouldBe 0
     }
   }
 
   test("key partition with n partitions") {
-    val partitioner = PartitionerOnToken(10)
+    val partitioner = new PartitionerOnToken(10)
     partitioner.partition(key(0)) shouldBe 8
     partitioner.partition(key(1)) shouldBe 9
     partitioner.partition(key(2)) shouldBe 2

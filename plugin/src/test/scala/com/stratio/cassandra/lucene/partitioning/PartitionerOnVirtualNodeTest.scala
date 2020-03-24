@@ -18,10 +18,11 @@ package com.stratio.cassandra.lucene.partitioning
 import com.stratio.cassandra.lucene.BaseScalaTest._
 import com.stratio.cassandra.lucene.IndexException
 import org.apache.cassandra.db.marshal.CompositeType
-import org.apache.cassandra.dht.Murmur3Partitioner
+import org.apache.cassandra.dht.{Murmur3Partitioner, Token}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.collection.JavaConverters._
 /** Tests for [[PartitionerOnColumn]].
   *
   * @author Andres de la Pena `adelapena@stratio.com`
@@ -30,28 +31,28 @@ import org.scalatest.junit.JUnitRunner
 class PartitionerOnVirtualNodeTest extends PartitionerTest {
 
   test("build with zero vnodes_per_partition") {
-    val longList = List(0, 1, 2, 3, 4, 5).map(new Murmur3Partitioner.LongToken(_))
-    assertThrows[IndexException] {PartitionerOnVirtualNode(0, longList)}
+    val longList = List(0, 1, 2, 3, 4, 5).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    assertThrows[IndexException] {new PartitionerOnVirtualNode(0, longList)}
   }
 
   test("build with negative partitions") {
-    val longList = List(0, 1, 2, 3, 4, 5).map(new Murmur3Partitioner.LongToken(_))
-    assertThrows[IndexException] {PartitionerOnVirtualNode(-1, longList)}
+    val longList = List(0, 1, 2, 3, 4, 5).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    assertThrows[IndexException] {new PartitionerOnVirtualNode(-1, longList)}
   }
 
   test("num partitions even division") {
-    val longList = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).map(new Murmur3Partitioner.LongToken(_))
-    PartitionerOnVirtualNode(2, longList).numPartitions shouldBe 5
+    val longList = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    new PartitionerOnVirtualNode(2, longList).numPartitions shouldBe 5
   }
 
   test("num partitions less than 1") {
-    val longList = List(0, 1, 2, 3, 4).map(new Murmur3Partitioner.LongToken(_))
-    PartitionerOnVirtualNode(7, longList).numPartitions shouldBe 1
+    val longList = List(0, 1, 2, 3, 4).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    new PartitionerOnVirtualNode(7, longList).numPartitions shouldBe 1
   }
 
   test("num partitions odd") {
-    val longList = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10).map(new Murmur3Partitioner.LongToken(_))
-    PartitionerOnVirtualNode(2, longList).numPartitions shouldBe 6
+    val longList = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    new PartitionerOnVirtualNode(2, longList).numPartitions shouldBe 6
   }
 
   test("key partition with 1 partition") {
@@ -64,8 +65,8 @@ class PartitionerOnVirtualNodeTest extends PartitionerTest {
       1844674407370955158l,
       3689348814741910319l,
       5534023222112865480l,
-      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_))
-    val partitioner = PartitionerOnVirtualNode(10, tokens)
+      7378697629483820641l)..map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    val partitioner = new PartitionerOnVirtualNode(10, tokens)
     for (i <- 1 to 10) {
       partitioner.partition(key(i)) shouldBe 0
     }
@@ -81,8 +82,8 @@ class PartitionerOnVirtualNodeTest extends PartitionerTest {
       1844674407370955158l,
       3689348814741910319l,
       5534023222112865480l,
-      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_))
-    val partitioner = PartitionerOnVirtualNode(2, tokens)
+      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+    val partitioner = new PartitionerOnVirtualNode(2, tokens)
     partitioner.numPartitions shouldBe 5
     partitioner.partition(key(0)) shouldBe 1
     partitioner.partition(key(1)) shouldBe 1
@@ -108,11 +109,11 @@ class PartitionerOnVirtualNodeTest extends PartitionerTest {
       1844674407370955158l,
       3689348814741910319l,
       5534023222112865480l,
-      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_))
+      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
 
-    PartitionerOnVirtualNode(2, tokens).partition(key) shouldBe 1
-    PartitionerOnVirtualNode(5, tokens).partition(key) shouldBe 0
-    PartitionerOnVirtualNode(10, tokens).partition(key) shouldBe 0
+    new PartitionerOnVirtualNode(2, tokens).partition(key) shouldBe 1
+    new PartitionerOnVirtualNode(5, tokens).partition(key) shouldBe 0
+    new PartitionerOnVirtualNode(10, tokens).partition(key) shouldBe 0
   }
 
 }

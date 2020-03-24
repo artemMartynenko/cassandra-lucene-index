@@ -27,15 +27,15 @@ class PartitionerOnNoneTest extends PartitionerTest {
 
   test("parse JSON") {
     val json = "{type:\"none\"}"
-    Partitioner.fromJson(json) shouldBe PartitionerOnNone.Builder()
+    Partitioner.fromJson(json) shouldBe new PartitionerOnNone.Builder()
   }
 
   test("num partitions") {
-    PartitionerOnNone().numPartitions shouldBe 1
+    new PartitionerOnNone().numPartitions shouldBe 1
   }
 
   test("key partition") {
-    val partitioner = PartitionerOnNone()
+    val partitioner = new PartitionerOnNone()
     for (i <- 1 to 20) partitioner.partition(key(i)) shouldBe 0
   }
 
