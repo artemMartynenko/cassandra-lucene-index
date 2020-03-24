@@ -65,7 +65,7 @@ class PartitionerOnVirtualNodeTest extends PartitionerTest {
       1844674407370955158l,
       3689348814741910319l,
       5534023222112865480l,
-      7378697629483820641l)..map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
+      7378697629483820641l).map(new Murmur3Partitioner.LongToken(_).asInstanceOf[Token]).asJava
     val partitioner = new PartitionerOnVirtualNode(10, tokens)
     for (i <- 1 to 10) {
       partitioner.partition(key(i)) shouldBe 0
