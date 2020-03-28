@@ -102,7 +102,7 @@ object IndexOptions {
   val SCHEMA_OPTION = "schema"
 
   val PARTITIONER_OPTION = "partitioner"
-  val DEFAULT_PARTITIONER = PartitionerOnNone()
+  val DEFAULT_PARTITIONER = new PartitionerOnNone()
 
   val SPARSE_OPTION = "sparse"
   val DEFAULT_SPARSE = false
