@@ -4,7 +4,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-/**
+/**A queue that executes each submitted task using one of possibly several pooled threads.
+ * Tasks can be submitted with an identifier, ensuring that all tasks with same identifier will be
+ * executed orderly in the same thread. Each thread has its own task queue.
+ *
+ * @author Andres de la Pena `adelapena@stratio.com`
  * @author Artem Martynenko artem7mag@gmai.com
  **/
 public interface TaskQueue extends Closeable {
