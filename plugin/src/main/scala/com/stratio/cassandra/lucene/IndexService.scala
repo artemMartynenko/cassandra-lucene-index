@@ -16,8 +16,9 @@
 package com.stratio.cassandra.lucene
 
 import java.lang.management.ManagementFactory
-import javax.management.{JMException, ObjectName}
+import java.util.stream.Collectors
 
+import javax.management.{JMException, ObjectName}
 import com.stratio.cassandra.lucene.index.{DocumentIterator, PartitionedIndex}
 import com.stratio.cassandra.lucene.mapping._
 import com.stratio.cassandra.lucene.search.Search
@@ -73,7 +74,7 @@ abstract class IndexService(
   val expressionMapper = new ExpressionMapper(metadata, indexMetadata)
 
   // Setup FS index and write queue
-  val queue = TaskQueue.build(options.indexingThreads, options.indexingQueuesSize)
+  val queue = TaskQueueBuilder.build(options.indexingThreads, options.indexingQueuesSize)
   val partitioner = options.partitioner
   val lucene = new PartitionedIndex(partitioner.numPartitions,
     idxName,
@@ -211,7 +212,7 @@ abstract class IndexService(
   /** Deletes all the index contents. */
   def truncate() {
     if (!excludedDataCenter)
-      queue.submitSynchronous(lucene.truncate)
+      queue.submitSynchronous(() => lucene.truncate)
   }
 
   /** Closes and removes all the index files. */
@@ -406,7 +407,7 @@ abstract class IndexService(
   /** @inheritdoc */
   override def commit() {
     if (!excludedDataCenter)
-      queue.submitSynchronous(lucene.commit)
+      queue.submitSynchronous(() => lucene.commit)
   }
 
   /** @inheritdoc */
@@ -438,7 +439,7 @@ abstract class IndexService(
   /** @inheritdoc */
   override def refresh() {
     if (!excludedDataCenter)
-      queue.submitSynchronous(lucene.refresh)
+      queue.submitSynchronous(() => lucene.refresh)
   }
 
 }
