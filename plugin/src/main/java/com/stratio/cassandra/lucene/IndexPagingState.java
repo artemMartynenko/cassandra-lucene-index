@@ -77,7 +77,7 @@ public class IndexPagingState {
         return state == null ? new IndexPagingState(limit) : fromByteBuffer(state.partitionKey);
     }
 
-    private int remaining;
+    public int remaining;
 
     /** If there could be more results. */
     private boolean hasMorePages;
