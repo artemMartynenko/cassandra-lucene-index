@@ -21,12 +21,15 @@ import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.ColumnDefinition;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.*;
+import org.apache.cassandra.db.filter.ClusteringIndexFilter;
 import org.apache.cassandra.db.filter.RowFilter;
 import org.apache.cassandra.db.partitions.Partition;
+import org.apache.cassandra.db.partitions.PartitionUpdate;
 import org.apache.cassandra.db.partitions.UnfilteredPartitionIterator;
 import org.apache.cassandra.db.rows.Row;
 import org.apache.cassandra.index.transactions.IndexTransaction;
 import org.apache.cassandra.schema.IndexMetadata;
+import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.concurrent.OpOrder;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
@@ -37,16 +40,15 @@ import org.apache.lucene.search.SortField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
+import scala.collection.SeqViewLike;
 
 import javax.management.JMException;
 import javax.management.ObjectName;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /** Lucene index service provider.
@@ -402,33 +404,124 @@ public abstract class IndexService implements IndexServiceMBean{
 
             TRACER.trace(MessageFormatter.format("Lucene index searching for {} rows", count).getMessage());
             List<Integer> partitions = partitioner.partitions(command);
-            List<Tuple<Integer,Optional<Term>>> readers = afters.stream()
+            List<Tuple<Integer,Term>> readers = afters.stream()
                     .filter(integerOptionalTuple -> partitions.contains(integerOptionalTuple._1))
+                    .map(integerOptionalTuple -> new Tuple<>(integerOptionalTuple._1, integerOptionalTuple._2.orElseGet(() -> null)))
                     .collect(Collectors.toList());
-            DocumentIterator documents = lucene.search()//TODO: continue here
-
+            DocumentIterator documents = lucene.search(readers, query, sort, count); //TODO: rethought about Optional<Term> and Term
+            return reader(documents, command, controller);
         }else {
            return new IndexReaderExcludingDataCenter(command, table);
         }
     }
 
 
+    /** Returns the key range query represented by the specified read command.
+     *
+     * @param command the read command } else {
+     * @return the key range query
+     */
     public Optional<Query> query(ReadCommand command){
-
+        if(command instanceof SinglePartitionReadCommand){
+            DecoratedKey key = ((SinglePartitionReadCommand) command).partitionKey();
+            ClusteringIndexFilter filter = command.clusteringIndexFilter(key);
+            return Optional.ofNullable(query(key, filter));
+        } else if(command instanceof PartitionRangeReadCommand){
+            return query(((PartitionRangeReadCommand) command).dataRange());
+        } else {
+            throw new IndexException("Unsupported read command {}", command.getClass());
+        }
     }
+
+
+    /** Returns a query to get the documents satisfying the specified key and clustering filter.
+     *
+     * @param key    the partition key
+     * @param filter the clustering key range
+     * @return a query to get the documents satisfying the key range
+     */
+    public abstract Query query(DecoratedKey key, ClusteringIndexFilter filter);
+
+    /** Returns a query to get the documents satisfying the specified data range.
+     *
+     * @param dataRange the data range
+     * @return a query to get the documents satisfying the data range
+     */
+    public abstract Optional<Query> query(DataRange dataRange);
 
 
     public List<Tuple<Integer,Optional<Term>>> after(IndexPagingState pagingState, ReadCommand command){
-
+        List<Integer> partitions = partitioner.partitions(command);
+        List<Optional<Term>> afters ;
+        if(pagingState == null){
+           afters =  IntStream.range(0, partitioner.numPartitions())
+                   .mapToObj(value -> Optional.<Term>empty())
+                   .collect(Collectors.toList());
+        } else {
+            afters = pagingState.forCommand(command, partitioner).stream()
+                    .map(tuple -> tuple.map(innerTuple -> after(innerTuple._1._2, innerTuple._2)))
+                    .collect(Collectors.toList());
+        }
+        return partitions.stream()
+                .map(i ->  new Tuple<>(i, afters.get(i)))
+                .collect(Collectors.toList());
     }
 
 
+    /** Returns a Lucene query to retrieve the row identified by the specified paging state.
+     *
+     * @param key        the partition key
+     * @param clustering the clustering key
+     * @return the query to retrieve the row
+     */
+    public abstract Term after(DecoratedKey key, Clustering clustering);
 
+
+    /** Returns the Lucene sort with the specified search sorting requirements followed by the
+     * Cassandra's natural ordering based on partitioning token and cell name.
+     *
+     * @param search the search containing sorting requirements
+     * @return a Lucene sort according to `search`
+     */
     public Sort sort(Search search){
+        List<SortField> sortFields = new ArrayList<>();
+        if(search.usesSorting()){
+            sortFields.addAll(search.sortFields(schema));
+        }
+        if(search.usesRelevance()){
+            sortFields.add(SortField.FIELD_SCORE);
+        }
 
+        sortFields.addAll(keySortFields());
+
+        return new Sort(sortFields.toArray(new SortField[0]));
     }
 
 
+    /** Reads from the local SSTables the rows identified by the specified search.
+     *
+     * @param documents  the Lucene documents
+     * @param command    the Cassandra command
+     * @param controller the read execution controller
+     * @return the local rows satisfying the search
+     */
+    public abstract IndexReader reader(DocumentIterator documents,
+                                       ReadCommand command,
+                                       ReadExecutionController controller);
+
+
+    /** Ensures that values present in a partition update are valid according to the schema.
+     *
+     * @param update the partition update containing the values to be validated
+     */
+    public void validate(PartitionUpdate update){
+        DecoratedKey key = update.partitionKey();
+        int now = FBUtilities.nowInSeconds();
+        update.forEach(row -> schema.validate(columnsMapper.columns(key, row , now)));
+    }
+
+
+    //TODO: implement MBean methods && check if everysthing implemented
     @Override
     public void commit() {
 
