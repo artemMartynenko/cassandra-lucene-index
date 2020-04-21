@@ -20,6 +20,7 @@ import java.util.function.BiFunction
 import java.util.{Collections, Optional}
 import java.{util => java}
 
+import com.stratio.cassandra.lucene.IndexPostProcessor.{GroupPostProcessor, ReadCommandPostProcessor}
 import com.stratio.cassandra.lucene.search.Search
 import com.stratio.cassandra.lucene.util.Logging
 import org.apache.cassandra.config.{CFMetaData, ColumnDefinition}
@@ -52,7 +53,7 @@ class Index(table: ColumnFamilyStore, indexMetadata: IndexMetadata)
 
   logger.debug(s"Building Lucene index ${table.metadata} $indexMetadata")
 
-  val service = try IndexService.build(table, indexMetadata) catch {
+  val service = try IndexServiceBuilder.build(table, indexMetadata) catch {
     case e: Exception => throw new IndexException(e)
   }
 

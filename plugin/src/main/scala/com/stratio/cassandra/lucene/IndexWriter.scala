@@ -39,7 +39,7 @@ abstract class IndexWriter(
     opGroup: OpOrder.Group,
     transactionType: IndexTransaction.Type) extends Indexer with Logging with Tracing {
 
-  val metadata = service.metadata
+  val metadata = service.metaData
   val table = service.table
 
   /** @inheritdoc */

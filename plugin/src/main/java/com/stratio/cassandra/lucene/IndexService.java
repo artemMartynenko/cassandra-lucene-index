@@ -23,7 +23,6 @@ import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.*;
 import org.apache.cassandra.db.filter.ClusteringIndexFilter;
 import org.apache.cassandra.db.filter.RowFilter;
-import org.apache.cassandra.db.partitions.Partition;
 import org.apache.cassandra.db.partitions.PartitionUpdate;
 import org.apache.cassandra.db.partitions.UnfilteredPartitionIterator;
 import org.apache.cassandra.db.rows.Row;
@@ -40,7 +39,6 @@ import org.apache.lucene.search.SortField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
-import scala.collection.SeqViewLike;
 
 import javax.management.JMException;
 import javax.management.ObjectName;
@@ -49,7 +47,6 @@ import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /** Lucene index service provider.
  *
@@ -65,39 +62,39 @@ public abstract class IndexService implements IndexServiceMBean{
     protected final IndexMetadata indexMetadata;
 
 
-    protected final CFMetaData metaData;
-    protected final String ksName;
-    protected final String cfName;
-    protected final String idxName;
-    protected final String qualifiedName;
+    public final CFMetaData metaData;
+    public final String ksName;
+    public final String cfName;
+    public final String idxName;
+    public final String qualifiedName;
 
-    protected final IndexOptions options;
-
-
-
-    protected final Schema schema;
-    protected final Set<ColumnDefinition> regulars;
-    protected final Set<String> mappedRegulars;
-    protected final boolean mapsMultiCell;
-    protected final boolean mapsPromaryKey;
-
-    protected final boolean excludedDataCentr;
+    public final IndexOptions options;
 
 
-    protected final TokenMapper tokenMapper;
-    protected final PartitionMapper partitionMapper;
-    protected final ColumnsMapper columnsMapper;
-    protected final ExpressionMapper expressionMapper;
+
+    public final Schema schema;
+    public final Set<ColumnDefinition> regulars;
+    public final Set<String> mappedRegulars;
+    public final boolean mapsMultiCell;
+    public final boolean mapsPrimaryKey;
+
+    public final boolean excludedDataCenter;
 
 
-    protected final TaskQueue queue;
-    protected final Partitioner partitioner;
+    public final TokenMapper tokenMapper;
+    public final PartitionMapper partitionMapper;
+    public final ColumnsMapper columnsMapper;
+    public final ExpressionMapper expressionMapper;
 
-    protected final PartitionedIndex lucene;
+
+    public final TaskQueue queue;
+    public final Partitioner partitioner;
+
+    public final PartitionedIndex lucene;
 
     protected ObjectName mBean;
 
-    protected final Locker readBeforeWriteLocker;
+    public final Locker readBeforeWriteLocker;
 
 
     /**
@@ -129,11 +126,11 @@ public abstract class IndexService implements IndexServiceMBean{
                         &&
                         schema.mapsCell(columnDefinition.name.toString()));
 
-        mapsPromaryKey = Lists.newArrayList(metaData.primaryKeyColumns().iterator())
+        mapsPrimaryKey = Lists.newArrayList(metaData.primaryKeyColumns().iterator())
                 .stream()
                 .anyMatch(columnDefinition -> schema.mapsCell(columnDefinition.name.toString()));
 
-        excludedDataCentr = options.excludedDataCenters.contains(DatabaseDescriptor.getLocalDataCenter());
+        excludedDataCenter = options.excludedDataCenters.contains(DatabaseDescriptor.getLocalDataCenter());
 
 
         // Setup mapping
@@ -165,7 +162,7 @@ public abstract class IndexService implements IndexServiceMBean{
         // Initialize index
         try {
             Sort sort = new Sort(keySortFields().toArray(new SortField[0]));
-            if(!excludedDataCentr){
+            if(!excludedDataCenter){
                 lucene.init(sort, fieldsToLoad());
             }
         }catch (Exception e){
@@ -267,7 +264,7 @@ public abstract class IndexService implements IndexServiceMBean{
      * @return `true` if the index must be updated, `false` otherwise
      */
     public boolean doesAffectIndex(Row row){
-        return !options.sparse || mapsPromaryKey || row.columns().stream()
+        return !options.sparse || mapsPrimaryKey || row.columns().stream()
                 .anyMatch(columnDefinition -> mappedRegulars.contains(columnDefinition.name.toString()));
     }
 
@@ -299,7 +296,7 @@ public abstract class IndexService implements IndexServiceMBean{
 
     /** Deletes all the index contents. */
     public void truncate(){
-        if(!excludedDataCentr){
+        if(!excludedDataCenter){
             queue.submitSynchronous(() -> {lucene.truncate(); return lucene;});
         }
     }
@@ -308,7 +305,7 @@ public abstract class IndexService implements IndexServiceMBean{
     /** Closes and removes all the index files. */
     public void delete(){
         try {
-            if(!excludedDataCentr) {
+            if(!excludedDataCenter) {
                 queue.close();
             }
             ManagementFactory.getPlatformMBeanServer().unregisterMBean(mBean);
@@ -317,7 +314,7 @@ public abstract class IndexService implements IndexServiceMBean{
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            if(!excludedDataCentr){
+            if(!excludedDataCenter){
                 lucene.delete();
             }
         }
@@ -332,7 +329,7 @@ public abstract class IndexService implements IndexServiceMBean{
      * @param nowInSec now in seconds
      */
     public void upsert(DecoratedKey key, Row row, int nowInSec){
-        if(!excludedDataCentr){
+        if(!excludedDataCenter){
             queue.submitAsynchronous(key, () -> {
                 int partition = partitioner.partition(key);
                 Clustering clustering = row.clustering();
@@ -359,7 +356,7 @@ public abstract class IndexService implements IndexServiceMBean{
      * @param clustering the clustering key
      */
     public void delete(DecoratedKey key, Clustering clustering){
-        if(!excludedDataCentr){
+        if(!excludedDataCenter){
             queue.submitAsynchronous(key, () -> {
                 int partition = partitioner.partition(key);
                 Term term = this.term(key, clustering);
@@ -375,7 +372,7 @@ public abstract class IndexService implements IndexServiceMBean{
      * @param key the partition key
      */
     public void delete(DecoratedKey key){
-        if(!excludedDataCentr){
+        if(!excludedDataCenter){
             queue.submitAsynchronous(key, () -> {
                 int partition = partitioner.partition(key);
                 Term term = this.term(key);
@@ -388,7 +385,7 @@ public abstract class IndexService implements IndexServiceMBean{
 
     public UnfilteredPartitionIterator search(ReadCommand command,
                                               ReadExecutionController controller){
-        if(!excludedDataCentr){
+        if(!excludedDataCenter){
             TRACER.trace("Building Lucene search");
             Search search = expressionMapper.search(command);
             Query query = search.query(schema, query(command).orElse(null));
@@ -521,34 +518,55 @@ public abstract class IndexService implements IndexServiceMBean{
     }
 
 
-    //TODO: implement MBean methods && check if everysthing implemented
     @Override
     public void commit() {
-
+        if(!excludedDataCenter){
+            queue.submitSynchronous(() -> {
+                lucene.commit();
+                return lucene;
+            });
+        }
     }
 
     @Override
     public long getNumDocs() {
-        return 0;
+        return !excludedDataCenter ? lucene.getNumDocs() : 0;
     }
 
     @Override
     public long getNumDeletedDocs() {
-        return 0;
+        return !excludedDataCenter ? lucene.getNumDeletedDocs() : 0;
     }
 
     @Override
     public void forceMerge(int maxNumSegments, boolean doWait) {
-
+        if(!excludedDataCenter){
+            queue.submitSynchronous(() -> {
+                        lucene.forceMerge(maxNumSegments, doWait);
+                        return lucene;
+                }
+            );
+        }
     }
 
     @Override
     public void forceMergeDeletes(boolean doWait) {
-
+        if(!excludedDataCenter){
+            queue.submitSynchronous(() -> {
+                        lucene.forceMergeDeletes(doWait);
+                        return lucene;
+                    }
+            );
+        }
     }
 
     @Override
     public void refresh() {
-
+        if(!excludedDataCenter){
+            queue.submitSynchronous(() -> {
+                lucene.refresh();
+                return lucene;
+            });
+        }
     }
 }

@@ -118,7 +118,7 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
                                   int now){
 
         TimeCounter.StartedTimeCounter time = TimeCounter.start();
-        RAMIndex index  = new RAMIndex(service.schema().analyzer);
+        RAMIndex index  = new RAMIndex(service.schema.analyzer);
         try {
             for (int id = 0; id < rows.size(); id++) {
                 Tuple<DecoratedKey, SingleRowIterator> tuple = rows.get(id);
@@ -128,7 +128,7 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
                 index.add(doc);
             }
 
-            Query query = search.postProcessingQuery(service.schema());
+            Query query = search.postProcessingQuery(service.schema);
             Sort sort = service.sort(search);
             List<Tuple<Document, ScoreDoc>> docs = index.search(query, sort, limit, FIELDS_TO_LOAD);
 
@@ -137,7 +137,7 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
             for (Tuple<Document, ScoreDoc> doc: docs) {
                 int id = Integer.parseInt(doc._1.get(ID_FIELD));
                 SingleRowIterator rowIterator = rows.get(id)._2;
-                SingleRowIterator decorated = rowIterator.decorate(row -> service.expressionMapper().decorate( row, doc._2, now));
+                SingleRowIterator decorated = rowIterator.decorate(row -> service.expressionMapper.decorate( row, doc._2, now));
                 merged.add(decorated);
             }
 
@@ -160,9 +160,9 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
     private Document document(DecoratedKey key, Row row, Search search, int now){
         Document document = new Document();
         Clustering clustering = row.clustering();
-        Columns columns = service.columnsMapper().columns(key, row, now);
+        Columns columns = service.columnsMapper.columns(key, row, now);
         service.keyIndexableFields(key, clustering).forEach(v1 -> document.add(v1));
-        service.schema().postProcessingIndexableFields(columns, search).forEach(document::add);
+        service.schema.postProcessingIndexableFields(columns, search).forEach(document::add);
         return document;
     }
 
@@ -185,7 +185,7 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
         @Override
         public PartitionIterator apply(PartitionIterator partitionIterator, ReadCommand command) {
             if(!partitionIterator.hasNext() || command instanceof SinglePartitionReadCommand) return partitionIterator;
-            Search search = service.expressionMapper().search(command);
+            Search search = service.expressionMapper.search(command);
             return process(partitionIterator, search, command.limits().count(), command.nowInSec());
         }
     }
@@ -208,7 +208,7 @@ public abstract class IndexPostProcessor<A extends ReadQuery> implements BiFunct
         @Override
         public PartitionIterator apply(PartitionIterator partitionIterator, SinglePartitionReadCommand.Group group) {
             if(!partitionIterator.hasNext() || group.commands.size() <= 1) return partitionIterator;
-            Search search = service.expressionMapper().search(group.commands.get(0));
+            Search search = service.expressionMapper.search(group.commands.get(0));
             return process(partitionIterator, search, group.limits().count(), group.nowInSec());
         }
     }

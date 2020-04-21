@@ -42,8 +42,8 @@ import scala.collection.mutable
 class IndexServiceWide(table: ColumnFamilyStore, index: IndexMetadata)
   extends IndexService(table, index) {
 
-  val clusteringMapper = new ClusteringMapper(metadata)
-  val keyMapper = new KeyMapper(metadata)
+  val clusteringMapper = new ClusteringMapper(metaData)
+  val keyMapper = new KeyMapper(metaData)
 
   init()
 
