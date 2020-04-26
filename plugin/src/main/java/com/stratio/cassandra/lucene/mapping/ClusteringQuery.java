@@ -42,12 +42,12 @@ public class ClusteringQuery extends MultiTermQuery {
      * @param start    the start clustering
      * @param stop     the stop clustering
      */
-    public ClusteringQuery(ClusteringMapper mapper, PartitionPosition position, ClusteringPrefix start, ClusteringPrefix stop) {
+    public ClusteringQuery(ClusteringMapper mapper, PartitionPosition position, Optional<ClusteringPrefix> start, Optional<ClusteringPrefix> stop) {
         super(ClusteringMapper.FIELD_NAME);
         this.mapper = mapper;
         this.position = position;
-        this.start = Optional.ofNullable(start);
-        this.stop = Optional.ofNullable(stop);
+        this.start = start;
+        this.stop = stop;
         this.token = position.getToken();
         this.seek = ClusteringMapper.prefix(token);
         this.comparator = mapper.comparator;

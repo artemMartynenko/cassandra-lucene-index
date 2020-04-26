@@ -37,17 +37,17 @@ public class IndexServiceSkinny extends IndexService{
     }
 
     @Override
-    List<SortField> keySortFields() {
+    public List<SortField> keySortFields() {
         return Lists.newArrayList(tokenMapper.sortField(), partitionMapper.sortField());
     }
 
     @Override
-    Set<String> fieldsToLoad() {
+    public Set<String> fieldsToLoad() {
         return Sets.newHashSet(PartitionMapper.FIELD_NAME);
     }
 
     @Override
-    List<IndexableField> keyIndexableFields(DecoratedKey key, Clustering clustering) {
+    public List<IndexableField> keyIndexableFields(DecoratedKey key, Clustering clustering) {
         return Lists.newArrayList(tokenMapper.indexableField(key), partitionMapper.indexableField(key));
     }
 

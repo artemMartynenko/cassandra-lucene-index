@@ -184,16 +184,16 @@ public abstract class IndexService implements IndexServiceMBean{
      *
      * @return the sort fields
      */
-    abstract List<SortField> keySortFields();
+    public abstract List<SortField> keySortFields();
 
     /** Returns the names of the Lucene fields to be loaded from index during searches.
      *
      * @return the names of the fields to be loaded
      */
-    abstract Set<String> fieldsToLoad();
+    public abstract Set<String> fieldsToLoad();
 
 
-    abstract List<IndexableField> keyIndexableFields(DecoratedKey key, Clustering clustering);
+    public abstract List<IndexableField> keyIndexableFields(DecoratedKey key, Clustering clustering);
 
 
 
@@ -381,6 +381,7 @@ public abstract class IndexService implements IndexServiceMBean{
             });
         }
     }
+
 
 
     public UnfilteredPartitionIterator search(ReadCommand command,

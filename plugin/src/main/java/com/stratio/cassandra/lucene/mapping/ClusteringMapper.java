@@ -217,8 +217,8 @@ public class ClusteringMapper {
      * @return the Lucene query
      */
     public Query query(PartitionPosition position,
-                       ClusteringPrefix start,
-                       ClusteringPrefix stop){
+                       Optional<ClusteringPrefix> start,
+                       Optional<ClusteringPrefix> stop){
         return new ClusteringQuery(this, position, start, stop);
     }
 
@@ -230,7 +230,7 @@ public class ClusteringMapper {
      * @return the Lucene query
      */
     public Query query(DecoratedKey key, Slice slice){
-        return query(key, slice.start(), slice.end());
+        return query(key, Optional.ofNullable(slice.start()), Optional.ofNullable(slice.end()));
     }
 
 
