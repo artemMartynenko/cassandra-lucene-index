@@ -27,15 +27,15 @@ import org.apache.cassandra.dht.Murmur3Partitioner
 class PartitionerTest extends BaseScalaTest {
 
   test("parse default") {
-    Partitioner.fromJson(null, "{}") shouldBe PartitionerOnNone()
+    Partitioner.fromJson(null, "{}") shouldBe new PartitionerOnNone()
   }
 
   test("num partitions with none partitioner") {
-    PartitionerOnNone().allPartitions shouldBe List(0)
+    new PartitionerOnNone().allPartitions shouldBe List(0)
   }
 
   test("num partitions with token partitioner") {
-    PartitionerOnToken(4).allPartitions shouldBe List(0, 1, 2, 3)
+    new PartitionerOnToken(4).allPartitions shouldBe List(0, 1, 2, 3)
   }
 
   def key(n: Int): DecoratedKey = Murmur3Partitioner.instance.decorateKey(int32.decompose(n))
