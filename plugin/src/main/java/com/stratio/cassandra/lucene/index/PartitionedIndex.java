@@ -16,6 +16,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -239,7 +240,7 @@ public class PartitionedIndex {
       * @param count      the max number of results to be collected
       * @return the found documents, sorted first by `sort`, then by `query` relevance
       */
-    public DocumentIterator search(List<Tuple<Integer, Term>> partitions, Query query, Sort sort, int count){
+    public DocumentIterator search(List<Tuple<Integer, Optional<Term>>> partitions, Query query, Sort sort, int count){
         LOGGER.debug("Searching in {} \n" +
                      "  partitions : {} \n" +
                      "       after : {} \n" +
@@ -248,12 +249,12 @@ public class PartitionedIndex {
                      "        sort : {} ",
                 name ,
                 partitions.stream().map(integerTermTuple -> integerTermTuple._1.toString()).collect(Collectors.joining(", ")),
-                partitions.stream().map(integerTermTuple -> integerTermTuple._2.toString()).collect(Collectors.joining(", ")),
+                partitions.stream().map(integerTermTuple -> integerTermTuple._2.map(Term::toString).orElse("")).collect(Collectors.joining(", ")),
                 query,
                 count,
                 sort);
 
-        List<Tuple<SearcherManager, Term>> cursors = partitions.stream()
+        List<Tuple<SearcherManager, Optional<Term>>> cursors = partitions.stream()
                 .map(intTermT -> new Tuple<>(indexes.get(intTermT._1).searcherManager(), intTermT._2))
                 .collect(Collectors.toList());
 

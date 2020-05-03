@@ -17,7 +17,7 @@ package com.stratio.cassandra.lucene.index
 
 import java.nio.file.Paths
 import java.util
-import java.util.{Collections, UUID}
+import java.util.{Collections, Optional, UUID}
 
 import com.stratio.cassandra.lucene.BaseScalaTest
 import com.stratio.cassandra.lucene.IndexOptions._
@@ -30,6 +30,8 @@ import org.junit.Assert.assertEquals
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
+import scala.collection.JavaConverters._
 
 /** Tests for [[PartitionedIndex]].
   *
@@ -91,7 +93,7 @@ class PartitionedIndexTest extends BaseScalaTest {
       assertEquals("Expected 2 documents", 2, index.getNumDocs)
 
       val query = new WildcardQuery(new Term("field", "value*"))
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0, null)), query, sort, 1), 2)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0, Optional.empty())).asJava, query, sort, 1), 2)
 
       // Delete by term
       index.delete(0, term1)
@@ -144,9 +146,9 @@ class PartitionedIndexTest extends BaseScalaTest {
       assertEquals("Expected 2 documents", 2, index.getNumDocs)
 
       val query = new WildcardQuery(new Term("field", "value*"))
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0, null)), query, sort, 1), 1)
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(1, null)), query, sort, 1), 1)
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0, null), new Tuple(1, null)), query, sort, 1), 2)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0, Optional.empty())).asJava, query, sort, 1), 1)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(1, Optional.empty())).asJava, query, sort, 1), 1)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0, Optional.empty()), new Tuple(1, Optional.empty())).asJava, query, sort, 1), 2)
 
       // Delete by term
       index.delete(0, term1)
@@ -194,8 +196,8 @@ class PartitionedIndexTest extends BaseScalaTest {
       Thread.sleep(REFRESH_MILLISECONDS)
       assertEquals("Expected 2 documents", 100, index.getNumDocs)
       val query = new MatchAllDocsQuery
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0 , null)), query, sort, 1000), 100)
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0, new Term("field_s", "49"))), query, sort, 1000), 50)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0 , Optional.empty())).asJava, query, sort, 1000), 100)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0, Optional.of(new Term("field_s", "49")))).asJava, query, sort, 1000), 50)
     })
   }
 
@@ -220,10 +222,10 @@ class PartitionedIndexTest extends BaseScalaTest {
       Thread.sleep(REFRESH_MILLISECONDS)
       assertEquals("Expected 2 documents", 100, index.getNumDocs)
       val query = new MatchAllDocsQuery
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(new Tuple(0, null),new Tuple(1, null)), query, sort, 1000), 100)
-      assertCount(index.search(new util.ArrayList[Tuple[Integer, Term]]()(
-        new Tuple(0, new Term("field_s", "48")),
-        new Tuple(1, new Term("field_s", "49"))), query, sort, 1000), 50)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](new Tuple(0, Optional.empty()),new Tuple(1, Optional.empty())).asJava, query, sort, 1000), 100)
+      assertCount(index.search(List[Tuple[Integer, Optional[Term]]](
+        new Tuple(0, Optional.of(new Term("field_s", "48"))),
+        new Tuple(1, Optional.of(new Term("field_s", "49")))).asJava, query, sort, 1000), 50)
     })
   }
 

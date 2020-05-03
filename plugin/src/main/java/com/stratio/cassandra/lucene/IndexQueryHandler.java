@@ -198,7 +198,7 @@ public class IndexQueryHandler implements QueryHandler {
         Search search = expressionIndexEntry.getValue().validate(expressionIndexEntry.getKey());
 
         // Get partitioner
-        Partitioner partitioner = expressionIndexEntry.getValue().service().partitioner;
+        Partitioner partitioner = expressionIndexEntry.getValue().service.partitioner;
 
         int limit = select.getLimit(options);
         int pageSize = select.getSelection().isAggregate() && options.getPageSize() <= 0 ? SelectStatement.DEFAULT_PAGE_SIZE : options.getPageSize();

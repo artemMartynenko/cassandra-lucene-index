@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -99,12 +101,25 @@ public class Columns {
     /** Returns a copy of this with the specified column appended. */
     public Columns add(String cell, Object value){
         List<Column> newList = Lists.newArrayList(this.columns);
-        newList.add(new Column(cell, value));
+        newList.add(new Column(cell, Optional.ofNullable(value)));
         return new Columns(newList);
     }
 
     public List<Column> getColumns() {
         return columns;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Columns columns1 = (Columns) o;
+        return Objects.equals(columns, columns1.columns);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(columns);
     }
 
     @Override

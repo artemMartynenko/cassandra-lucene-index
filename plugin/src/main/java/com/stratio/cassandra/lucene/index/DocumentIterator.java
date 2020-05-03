@@ -24,7 +24,7 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
     private static int MAX_PAGE_SIZE = 10000;
 
 
-    private List<Tuple<SearcherManager, Term>> cursors;
+    private List<Tuple<SearcherManager, Optional<Term>>> cursors;
     private Sort indexSort;
     private Sort querySort;
     private Query query;
@@ -36,11 +36,11 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
     private List<SearcherManager> managers;
     private List<Integer> indices;
     private List<IndexSearcher> searchers;
-    private List<Term> afterTerms;
+    private List<Optional<Term>> afterTerms;
     private List<Integer> offsets;
     private boolean finished;
     private boolean closed;
-    private List<ScoreDoc> afters;
+    private List<Optional<ScoreDoc>> afters;
     private Sort sort;
 
 
@@ -52,7 +52,7 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
      * @param limit     the iteration page size
      * @param fields    the names of the document fields to be loaded
      */
-    public DocumentIterator(List<Tuple<SearcherManager, Term>> cursors, Sort indexSort, Sort querySort, Query query, Integer limit, Set<String> fields) {
+    public DocumentIterator(List<Tuple<SearcherManager, Optional<Term>>> cursors, Sort indexSort, Sort querySort, Query query, Integer limit, Set<String> fields) {
         this.cursors = cursors;
         this.indexSort = indexSort;
         this.querySort = querySort;
@@ -98,9 +98,9 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
     }
 
 
-    private List<ScoreDoc> getAfters() {
+    private List<Optional<ScoreDoc>> getAfters() {
         try {
-            return indices.stream().map(i -> Optional.of(afterTerms.get(i)).map(wrapf(term -> {
+            return indices.stream().map(i -> afterTerms.get(i).map(wrapf(term -> {
                 //TODO: add time benchmark for debug
                 BooleanQuery.Builder builder = new BooleanQuery.Builder();
                 builder.add(new TermQuery(term), BooleanClause.Occur.FILTER);
@@ -111,7 +111,7 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
                 } else {
                     throw new IndexException("");
                 }
-            })).get()).collect(Collectors.toList());
+            }))).collect(Collectors.toList());
 
         } catch (Exception e) {
             releaseSearchers();
@@ -124,9 +124,9 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
         try {
             //TODO:add benchmark for debug
             TopFieldDocs[] fieldDocs = indices.stream().map(wrapf(i -> {
-                Term afterTerm = afterTerms.get(i);
-                if (afterTerm == null && EarlyTerminatingSortingCollector.canEarlyTerminate(sort, indexSort)) {
-                    FieldDoc fieldDoc = (FieldDoc) Optional.of(afters.get(i)).orElse(null);
+                Optional<Term> afterTerm = afterTerms.get(i);
+                if (!afterTerm.isPresent() && EarlyTerminatingSortingCollector.canEarlyTerminate(sort, indexSort)) {
+                    FieldDoc fieldDoc = (FieldDoc) afters.get(i).orElse(null);
                     TopFieldCollector collector = null;
                     collector = TopFieldCollector.create(sort, pageSize, fieldDoc, true, false, false);
                     int hits = offsets.get(i) + pageSize;
@@ -136,7 +136,7 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
                     offsets.set(i, offsets.get(i) + topDocs.scoreDocs.length);
                     return topDocs;
                 } else {
-                    return searchers.get(i).searchAfter(Optional.of(afters.get(i)).orElse(null), query, pageSize, sort, false, false);
+                    return searchers.get(i).searchAfter(afters.get(i).orElse(null), query, pageSize, sort, false, false);
                 }
             })).toArray(TopFieldDocs[]::new);
 
@@ -149,7 +149,7 @@ public class DocumentIterator implements Iterable<Tuple<Document, ScoreDoc>>,Ite
 
             for (ScoreDoc scoreDoc : scoreDocs) {
                 int shard = scoreDoc.shardIndex;
-                afters.set(shard, scoreDoc);
+                afters.set(shard, Optional.of(scoreDoc));
                 Document document = searchers.get(shard).doc(scoreDoc.doc, fields);
                 documents.add(new Tuple<>(document, scoreDoc));
             }

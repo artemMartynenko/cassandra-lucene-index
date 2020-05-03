@@ -30,62 +30,62 @@ import scala.collection.JavaConverters._
 class SchemaValidatorTest extends BaseScalaTest {
 
   test("supports regular") {
-    supports(utf8, List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(utf8, List(classOf[Number]).asJava, List().asJava, true) shouldBe false
-    supports(utf8, List(classOf[String], classOf[Number]).asJava, List().asJava, true) shouldBe true
-    supports(utf8, List(classOf[Number], classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(utf8, List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(utf8, List[Class[_]](classOf[Number]).asJava, List().asJava, true) shouldBe false
+    supports(utf8, List[Class[_]](classOf[String], classOf[Number]).asJava, List().asJava, true) shouldBe true
+    supports(utf8, List[Class[_]](classOf[Number], classOf[String]).asJava, List().asJava, true) shouldBe true
   }
 
   test("supports list") {
-    supports(list(utf8, false), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(list(utf8, true), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(list(int32, false), List(classOf[String]).asJava, List().asJava, true) shouldBe false
-    supports(list(int32, true), List(classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(list(utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(list(utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(list(int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(list(int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
   }
 
   test("supports set") {
-    supports(set(utf8, false), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(set(utf8, true), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(set(int32, false), List(classOf[String]).asJava, List().asJava, true) shouldBe false
-    supports(set(int32, true), List(classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(set(utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(set(utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(set(int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(set(int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
   }
 
   test("supports map") {
-    supports(map(int32, utf8, false), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(map(int32, utf8, true), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(map(utf8, int32, false), List(classOf[String]).asJava, List().asJava, true) shouldBe false
-    supports(map(utf8, int32, true), List(classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(map(int32, utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(map(int32, utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(map(utf8, int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
+    supports(map(utf8, int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe false
   }
 
   test("non supporting collections") {
-    supports(map(int32, utf8, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(map(int32, utf8, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(map(utf8, int32, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(map(utf8, int32, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(map(int32, utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(map(int32, utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(map(utf8, int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(map(utf8, int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
 
-    supports(list(utf8, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(list(utf8, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(list(int32, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(list(int32, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(list(utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(list(utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(list(int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(list(int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
 
-    supports(set(utf8, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(set(utf8, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(set(int32, false), List(classOf[String]).asJava, List().asJava, false) shouldBe false
-    supports(set(int32, true), List(classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(set(utf8, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(set(utf8, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(set(int32, false), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
+    supports(set(int32, true), List[Class[_]](classOf[String]).asJava, List().asJava, false) shouldBe false
   }
 
   test("supports reversed") {
-    supports(reversed(utf8), List(classOf[String]).asJava, List().asJava, true) shouldBe true
-    supports(reversed(int32), List(classOf[String]).asJava,  List().asJava,true) shouldBe false
-    supports(reversed(utf8), List(classOf[String], classOf[Number]).asJava, List().asJava, true) shouldBe true
-    supports(reversed(utf8), List(classOf[Number], classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(reversed(utf8), List[Class[_]](classOf[String]).asJava, List().asJava, true) shouldBe true
+    supports(reversed(int32), List[Class[_]](classOf[String]).asJava,  List().asJava,true) shouldBe false
+    supports(reversed(utf8), List[Class[_]](classOf[String], classOf[Number]).asJava, List().asJava, true) shouldBe true
+    supports(reversed(utf8), List[Class[_]](classOf[Number], classOf[String]).asJava, List().asJava, true) shouldBe true
   }
 
   test("excluded types") {
-    supports(reversed(utf8), List(classOf[String]).asJava, List(classOf[String]).asJava, true) shouldBe false
-    supports(reversed(int32), List(classOf[String]).asJava,  List(classOf[String]).asJava,true) shouldBe false
-    supports(reversed(utf8), List(classOf[String], classOf[Number]).asJava, List(classOf[String]).asJava, true) shouldBe false
-    supports(reversed(utf8), List(classOf[Number], classOf[String]).asJava, List(classOf[String]).asJava, true) shouldBe false
+    supports(reversed(utf8), List[Class[_]](classOf[String]).asJava, List[Class[_]](classOf[String]).asJava, true) shouldBe false
+    supports(reversed(int32), List[Class[_]](classOf[String]).asJava,  List[Class[_]](classOf[String]).asJava,true) shouldBe false
+    supports(reversed(utf8), List[Class[_]](classOf[String], classOf[Number]).asJava, List[Class[_]](classOf[String]).asJava, true) shouldBe false
+    supports(reversed(utf8), List[Class[_]](classOf[Number], classOf[String]).asJava, List[Class[_]](classOf[String]).asJava, true) shouldBe false
   }
 
   test("child regular") {

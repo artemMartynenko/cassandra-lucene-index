@@ -402,9 +402,9 @@ public abstract class IndexService implements IndexServiceMBean{
 
             TRACER.trace(MessageFormatter.format("Lucene index searching for {} rows", count).getMessage());
             List<Integer> partitions = partitioner.partitions(command);
-            List<Tuple<Integer,Term>> readers = afters.stream()
+            List<Tuple<Integer,Optional<Term>>> readers = afters.stream()
                     .filter(integerOptionalTuple -> partitions.contains(integerOptionalTuple._1))
-                    .map(integerOptionalTuple -> new Tuple<>(integerOptionalTuple._1, integerOptionalTuple._2.orElseGet(() -> null)))
+                    .map(integerOptionalTuple -> new Tuple<>(integerOptionalTuple._1, integerOptionalTuple._2))
                     .collect(Collectors.toList());
             DocumentIterator documents = lucene.search(readers, query, sort, count); //TODO: rethought about Optional<Term> and Term
             return reader(documents, command, controller);

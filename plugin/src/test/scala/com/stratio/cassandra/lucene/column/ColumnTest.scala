@@ -16,7 +16,7 @@
 package com.stratio.cassandra.lucene.column
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{Date, Optional}
 
 import com.stratio.cassandra.lucene.column.Column._
 import com.stratio.cassandra.lucene.BaseScalaTest
@@ -36,7 +36,7 @@ class ColumnTest extends BaseScalaTest {
     column.cell shouldBe "cell"
     column.mapper shouldBe "cell"
     column.field shouldBe "cell"
-    column.value shouldBe None
+    column.value shouldBe Optional.empty()
   }
 
   test("set all attributes") {
@@ -49,7 +49,7 @@ class ColumnTest extends BaseScalaTest {
     column.cell shouldBe "cell"
     column.mapper shouldBe "cell.u1.u2"
     column.field shouldBe "cell.u1.u2$m1$m2"
-    column.value shouldBe Some(5)
+    column.value shouldBe Optional.of(5)
   }
 
   test("fieldName") {

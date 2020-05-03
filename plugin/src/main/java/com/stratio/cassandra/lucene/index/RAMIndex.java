@@ -95,7 +95,7 @@ public class RAMIndex {
             Sort newSort = sort.rewrite(searcher);
             TopDocs topDocs = searcher.search(query, count, newSort, true, true);
             return Arrays.stream(topDocs.scoreDocs)
-                    .map(wrapf(scoreDoc -> new Tuple(searcher.doc(scoreDoc.doc, fields), scoreDoc)))
+                    .map(wrapf(scoreDoc -> new Tuple<>(searcher.doc(scoreDoc.doc, fields), scoreDoc)))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException(e);

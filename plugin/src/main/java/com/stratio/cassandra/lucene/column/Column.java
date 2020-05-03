@@ -4,12 +4,10 @@ import com.google.common.collect.Lists;
 import com.stratio.cassandra.lucene.IndexException;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.SimpleDateType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -60,7 +58,7 @@ public class Column {
             String udtSuffix = mapSuffixStart < 0 ? name.substring( udtSuffixStart + 1) : name.substring( udtSuffixStart +1 , mapSuffixStart);
             return Arrays.asList(udtSuffix.split(UDT_PATTERN));
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -88,22 +86,21 @@ public class Column {
      * @param map   the map suffix
      * @param value the optional value
      */
-    public Column(String cell, String udt, String map, Object value) {
+    public Column(String cell, String udt, String map, Optional<?> value) {
         this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
         this.udt = Optional.ofNullable(udt).orElse("");
         this.map = Optional.ofNullable(map).orElse("");
-        this.value = Optional.ofNullable(value);
-        this.mapper = cell.concat(udt);
-        this.field = mapper.concat(map);
+        this.value = value;
+        this.mapper = udt != null ? cell.concat(udt) : cell;
+        this.field = map != null ? mapper.concat(map) : mapper;
     }
 
     public Column(String cell) {
-        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
+        this(cell, StringUtils.EMPTY, StringUtils.EMPTY, Optional.empty());
     }
 
-    public Column(String cell, Object value) {
-        this.cell = Optional.ofNullable(cell).orElseThrow(() -> new IndexException("Cell name shouldn't be blank"));
-        this.value = Optional.ofNullable(value);
+    public Column(String cell, Optional<?> value) {
+       this(cell, null, null, value);
     }
 
     /** Returns `true` if the value is not defined, `false` otherwise. */
@@ -112,23 +109,23 @@ public class Column {
     }
 
     /** Returns the value, or null if it is not defined. */
-    public Object getValueOrNull() {
+    public Object valueOrNull() {
         return value.orElse(null);
     }
 
     /** Returns a copy of this with the specified name appended to the list of UDT names. */
     public Column withUDTName(String name) {
-        return new Column(this.cell, this.udt + UDT_SEPARATOR + name, this.map, value.get());
+        return new Column(this.cell, this.udt + UDT_SEPARATOR + name, this.map, value);
     }
 
     /** Returns a copy of this with the specified name appended to the list of map names. */
     public Column withMapName(String name) {
-        return new Column(this.cell, this.udt, this.map + MAP_SEPARATOR + name, value.get());
+        return new Column(this.cell, this.udt, this.map + MAP_SEPARATOR + name, value);
     }
 
     /** Returns a copy of this with the specified value. */
     public Column withValue(Object value) {
-        return new Column(this.cell, this.udt, this.map, value);
+        return new Column(this.cell, this.udt, this.map, Optional.ofNullable(value));
     }
 
     /** Returns a copy of this with the specified decomposed value. */
@@ -148,8 +145,9 @@ public class Column {
 
     /** Returns a {@link Columns} composed by this and the specified columns. */
     public Columns at(Columns columns){
-        List<Column> composed = Lists.newArrayList(columns.getColumns());
+        List<Column> composed = new ArrayList<>(columns.size() +1 );
         composed.add(this);
+        composed.addAll(columns.getColumns());
         return new Columns(composed);
     }
 
@@ -200,6 +198,24 @@ public class Column {
 
     public void setField(String field) {
         this.field = field;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Column column = (Column) o;
+        return Objects.equals(cell, column.cell) &&
+                Objects.equals(udt, column.udt) &&
+                Objects.equals(map, column.map) &&
+                Objects.equals(value, column.value) &&
+                Objects.equals(mapper, column.mapper) &&
+                Objects.equals(field, column.field);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cell, udt, map, value, mapper, field);
     }
 
     @Override

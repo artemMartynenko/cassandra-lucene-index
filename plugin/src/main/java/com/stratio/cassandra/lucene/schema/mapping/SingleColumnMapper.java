@@ -114,7 +114,7 @@ public abstract class SingleColumnMapper<T extends Comparable<T>> extends Mapper
     }
 
     private List<IndexableField> indexableFields(Column c) {
-        String name = column.equals(field) ? c.field() : c.fieldName(field);
+        String name = column.equals(field) ? c.field : c.fieldName(field);
         Object value = c.valueOrNull();
         if (value != null) {
             T base = base(c);

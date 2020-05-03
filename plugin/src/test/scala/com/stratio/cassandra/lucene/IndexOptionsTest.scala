@@ -19,6 +19,7 @@ import com.stratio.cassandra.lucene.IndexOptions._
 import com.stratio.cassandra.lucene.partitioning.{PartitionerOnNone, PartitionerOnToken}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import scala.collection.JavaConverters._
 
 /** Tests for [[IndexOptions]].
   *
@@ -30,241 +31,241 @@ class IndexOptionsTest extends BaseScalaTest {
   // Refresh seconds option tests
 
   test("parse refresh seconds option with default") {
-    parseRefresh(Map()) shouldBe DEFAULT_REFRESH_SECONDS
+    parseRefresh(Map[String, String]().asJava) shouldBe DEFAULT_REFRESH_SECONDS
   }
 
   test("parse refresh seconds option with integer") {
-    parseRefresh(Map(REFRESH_SECONDS_OPTION -> "1")) shouldBe 1
+    parseRefresh(Map(REFRESH_SECONDS_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse refresh seconds option with decimal") {
-    parseRefresh(Map(REFRESH_SECONDS_OPTION -> "0.1")) shouldBe 0.1
+    parseRefresh(Map(REFRESH_SECONDS_OPTION -> "0.1").asJava) shouldBe 0.1
   }
 
   test("parse refresh seconds option with failing non numeric value") {
     intercept[IndexException] {
-      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "a"))
+      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "a").asJava)
     }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be a strictly positive decimal, found: a"
   }
 
   test("parse refresh seconds option with failing zero value") {
     intercept[IndexException] {
-      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "0"))
+      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "0").asJava)
     }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be strictly positive, found: 0.0"
   }
 
   test("parse refresh seconds option with failing negative value") {
     intercept[IndexException] {
-      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "-1"))
+      parseRefresh(Map(REFRESH_SECONDS_OPTION -> "-1").asJava)
     }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be strictly positive, found: -1.0"
   }
 
   // RAM buffer MB option tests
 
   test("parse RAM buffer MB option with default") {
-    parseRamBufferMB(Map()) shouldBe DEFAULT_RAM_BUFFER_MB
+    parseRamBufferMB(Map[String, String]().asJava) shouldBe DEFAULT_RAM_BUFFER_MB
   }
 
   test("parse RAM buffer MB option with integer") {
-    parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "1")) shouldBe 1
+    parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse RAM buffer MB option with failing decimal") {
     intercept[IndexException] {
-      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "0.1"))
+      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "0.1").asJava)
     }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be a strictly positive integer, found: 0.1"
   }
 
   test("parse RAM buffer MB option with failing non numeric value") {
     intercept[IndexException] {
-      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "a"))
+      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "a").asJava)
     }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be a strictly positive integer, found: a"
   }
 
   test("parse RAM buffer MB option with failing zero value") {
     intercept[IndexException] {
-      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "0"))
+      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "0").asJava)
     }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be strictly positive, found: 0"
   }
 
   test("parse RAM buffer MB option with failing negative value") {
     intercept[IndexException] {
-      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "-1"))
+      parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "-1").asJava)
     }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be strictly positive, found: -1"
   }
 
   // Max merge MB option tests
 
   test("parse max merge MB option with default") {
-    parseMaxMergeMB(Map()) shouldBe DEFAULT_MAX_MERGE_MB
+    parseMaxMergeMB(Map[String, String]().asJava) shouldBe DEFAULT_MAX_MERGE_MB
   }
 
   test("parse max merge MB option with integer") {
-    parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "1")) shouldBe 1
+    parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse max merge MB option with failing decimal") {
     intercept[IndexException] {
-      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "0.1"))
+      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "0.1").asJava)
     }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be a strictly positive integer, found: 0.1"
   }
 
   test("parse max merge MB option with failing non numeric value") {
     intercept[IndexException] {
-      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "a"))
+      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "a").asJava)
     }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be a strictly positive integer, found: a"
   }
 
   test("parse max merge MB option with failing zero value") {
     intercept[IndexException] {
-      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "0"))
+      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "0").asJava)
     }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be strictly positive, found: 0"
   }
 
   test("parse max merge MB option with failing negative value") {
     intercept[IndexException] {
-      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "-1"))
+      parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "-1").asJava)
     }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be strictly positive, found: -1"
   }
 
   // Max cached MB option tests
 
   test("parse max cached MB option with default") {
-    parseMaxCachedMB(Map()) shouldBe DEFAULT_MAX_CACHED_MB
+    parseMaxCachedMB(Map[String, String]().asJava) shouldBe DEFAULT_MAX_CACHED_MB
   }
 
   test("parse max cached MB option with integer") {
-    parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "1")) shouldBe 1
+    parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse max cached MB option with failing decimal") {
     intercept[IndexException] {
-      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "0.1"))
+      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "0.1").asJava)
     }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be a strictly positive integer, found: 0.1"
   }
 
   test("parse max cached MB option with failing non numeric value") {
     intercept[IndexException] {
-      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "a"))
+      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "a").asJava)
     }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be a strictly positive integer, found: a"
   }
 
   test("parse max cached MB option with failing zero value") {
     intercept[IndexException] {
-      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "0"))
+      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "0").asJava)
     }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be strictly positive, found: 0"
   }
 
   test("parse max cached MB option with failing negative value") {
     intercept[IndexException] {
-      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "-1"))
+      parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "-1").asJava)
     }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be strictly positive, found: -1"
   }
 
   // Indexing threads option tests
 
   test("parse indexing threads option with default") {
-    parseIndexingThreads(Map()) shouldBe DEFAULT_INDEXING_THREADS
+    parseIndexingThreads(Map[String, String]().asJava) shouldBe DEFAULT_INDEXING_THREADS
   }
 
   test("parse indexing threads option with integer") {
-    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "1")) shouldBe 1
+    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse indexing threads option with failing decimal") {
     intercept[IndexException] {
-      parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "0.1"))
+      parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "0.1").asJava)
     }.getMessage shouldBe s"'$INDEXING_THREADS_OPTION' must be an integer, found: 0.1"
   }
 
   test("parse indexing threads option with failing non numeric value") {
     intercept[IndexException] {
-      parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "a"))
+      parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "a").asJava)
     }.getMessage shouldBe s"'$INDEXING_THREADS_OPTION' must be an integer, found: a"
   }
 
   test("parse indexing threads option with zero value") {
-    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "-1")) shouldBe -1
+    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "-1").asJava) shouldBe -1
   }
 
   test("parse indexing threads option with negative value") {
-    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "-1")) shouldBe -1
+    parseIndexingThreads(Map(INDEXING_THREADS_OPTION -> "-1").asJava) shouldBe -1
   }
 
   // Indexing queues size option tests
 
   test("parse indexing queues size option with default") {
-    parseIndexingQueuesSize(Map()) shouldBe DEFAULT_INDEXING_QUEUES_SIZE
+    parseIndexingQueuesSize(Map[String, String]().asJava) shouldBe DEFAULT_INDEXING_QUEUES_SIZE
   }
 
   test("parse indexing queues size option with integer") {
-    parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "1")) shouldBe 1
+    parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "1").asJava) shouldBe 1
   }
 
   test("parse indexing queues size option with failing decimal") {
     intercept[IndexException] {
-      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "0.1"))
+      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "0.1").asJava)
     }.getMessage shouldBe
       s"'$INDEXING_QUEUES_SIZE_OPTION' must be a strictly positive integer, found: 0.1"
   }
 
   test("parse indexing queues size option with failing non numeric value") {
     intercept[IndexException] {
-      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "a"))
+      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "a").asJava)
     }.getMessage shouldBe
       s"'$INDEXING_QUEUES_SIZE_OPTION' must be a strictly positive integer, found: a"
   }
 
   test("parse indexing queues size option with failing zero value") {
     intercept[IndexException] {
-      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "0"))
+      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "0").asJava)
     }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be strictly positive, found: 0"
   }
 
   test("parse indexing queues size option with failing negative value") {
     intercept[IndexException] {
-      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "-1"))
+      parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "-1").asJava)
     }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be strictly positive, found: -1"
   }
 
   // Excluded data centers size option tests
 
   test("parse excluded data centers option with default") {
-    parseExcludedDataCenters(Map()) shouldBe DEFAULT_EXCLUDED_DATA_CENTERS
+    parseExcludedDataCenters(Map[String, String]().asJava) shouldBe DEFAULT_EXCLUDED_DATA_CENTERS
   }
 
   test("parse excluded data centers option with empty list") {
-    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "")) shouldBe List()
+    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "").asJava) shouldBe List()
   }
 
   test("parse excluded data centers option with singleton list") {
-    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "dc1")) shouldBe List("dc1")
+    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "dc1").asJava) shouldBe List("dc1")
   }
 
   test("parse excluded data centers option with multiple list") {
     val options = Map(EXCLUDED_DATA_CENTERS_OPTION -> " dc1,dc2 ")
-    parseExcludedDataCenters(options) shouldBe List("dc1", "dc2")
+    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2")
   }
 
   test("parse excluded data centers option with multiple list and spaces") {
     val options = Map(EXCLUDED_DATA_CENTERS_OPTION -> " dc1 , dc2 ")
-    parseExcludedDataCenters(options) shouldBe List("dc1", "dc2")
+    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2")
   }
 
   // Partitioner option tests
 
   test("parse partitioner option with default") {
-    parsePartitioner(Map(), null) shouldBe DEFAULT_PARTITIONER
+    parsePartitioner(Map[String, String]().asJava, null) shouldBe DEFAULT_PARTITIONER
   }
 
   test("parse partitioner with none partitioner") {
     val json = "{type:\"none\"}"
-    parsePartitioner(Map(PARTITIONER_OPTION -> json), null) shouldBe PartitionerOnNone()
+    parsePartitioner(Map(PARTITIONER_OPTION -> json).asJava, null) shouldBe new PartitionerOnNone()
   }
 
   test("parse partitioner with token partitioner") {
     val json = "{type:\"token\", partitions: 10}"
-    parsePartitioner(Map(PARTITIONER_OPTION -> json), null) shouldBe PartitionerOnToken(10)
+    parsePartitioner(Map(PARTITIONER_OPTION -> json).asJava, null) shouldBe new PartitionerOnToken(10)
   }
 
 }
