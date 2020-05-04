@@ -214,7 +214,7 @@ public class IndexOptions {
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                throw new IndexException("{} must be an integer, found: {}", name, s);
+                throw new IndexException("'{}' must be an integer, found: {}", name, s);
             }
         }).orElse(defaultValue);
     }
@@ -227,13 +227,13 @@ public class IndexOptions {
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                throw new IndexException("{} must be a strictly positive integer, found: {}", name, s);
+                throw new IndexException("'{}' must be a strictly positive integer, found: {}", name, s);
             }
         }).map(integer -> {
             if (integer > 0) {
                 return integer;
             } else {
-                throw new IndexException("{} must be a strictly positive , found: {}", name, integer);
+                throw new IndexException("'{}' must be a strictly positive, found: {}", name, integer);
             }
         }).orElse(defaultValue);
     }
@@ -246,13 +246,13 @@ public class IndexOptions {
             try {
                 return Double.parseDouble(s);
             } catch (NumberFormatException e) {
-                throw new IndexException("{} must be a strictly positive decimal, found: {}", name, s);
+                throw new IndexException("'{}' must be a strictly positive decimal, found: {}", name, s);
             }
         }).map(d -> {
             if (d > 0) {
                 return d;
             } else {
-                throw new IndexException("{} must be a strictly positive , found: {}", name, d);
+                throw new IndexException("'{}' must be a strictly positive, found: {}", name, d);
             }
         }).orElse(defaultValue);
     }

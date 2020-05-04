@@ -8,6 +8,7 @@ import org.apache.cassandra.db.*;
 import org.apache.cassandra.dht.Token;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -71,6 +72,20 @@ public class PartitionerOnToken implements Partitioner {
         }else {
             throw new IndexException("Unsupported read command type: "+command.getClass());
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartitionerOnToken that = (PartitionerOnToken) o;
+        return partitions == that.partitions &&
+                Objects.equals(allPartitions, that.allPartitions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(partitions, allPartitions);
     }
 
     /**{@link PartitionerOnToken} builder.*/

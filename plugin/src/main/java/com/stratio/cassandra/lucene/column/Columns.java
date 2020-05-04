@@ -32,7 +32,7 @@ public class Columns {
      * @constructor create a new empty columns.
      */
     public Columns() {
-        this.columns = Collections.emptyList();
+        this.columns = Lists.newArrayList();
     }
 
 
@@ -52,8 +52,8 @@ public class Columns {
      * Returns a copy of this with the specified column prepended in O(1) time.
      */
     public Columns plusToHead(Column column) {
-        List<Column> newList = Lists.newArrayList(column);
-        newList.addAll(columns);
+        this.columns.add(0,column);
+        List<Column> newList = Lists.newArrayList(this.columns);
         return new Columns(newList);
     }
 
@@ -62,8 +62,8 @@ public class Columns {
      * Returns a copy of this with the specified column appended in O(n) time.
      */
     public Columns plus(Column column) {
+        this.columns.add(column);
         List<Column> newList = Lists.newArrayList(columns);
-        newList.add(column);
         return new Columns(newList);
     }
 
@@ -71,8 +71,8 @@ public class Columns {
      * Returns a copy of this with the specified columns appended.
      */
     public Columns plus(Columns columns) {
+        this.columns.addAll(columns.columns);
         List<Column> newList = Lists.newArrayList(this.columns);
-        newList.addAll(columns.columns);
         return new Columns(newList);
     }
 
@@ -93,15 +93,15 @@ public class Columns {
 
     /** Returns a copy of this with the specified column appended. */
     public Columns add(String cell){
-      List<Column> newList = Lists.newArrayList(this.columns);
-      newList.add(new Column(cell));
-      return new Columns(newList);
+        this.columns.add(new Column(cell));
+        List<Column> newList = Lists.newArrayList(this.columns);
+        return new Columns(newList);
     }
 
     /** Returns a copy of this with the specified column appended. */
     public Columns add(String cell, Object value){
+        this.columns.add(new Column(cell, Optional.ofNullable(value)));
         List<Column> newList = Lists.newArrayList(this.columns);
-        newList.add(new Column(cell, Optional.ofNullable(value)));
         return new Columns(newList);
     }
 

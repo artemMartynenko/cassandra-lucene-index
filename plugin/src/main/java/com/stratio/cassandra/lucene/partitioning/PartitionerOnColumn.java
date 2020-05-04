@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -121,6 +122,22 @@ public class PartitionerOnColumn implements Partitioner{
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartitionerOnColumn that = (PartitionerOnColumn) o;
+        return partitions == that.partitions &&
+                position == that.position &&
+                Objects.equals(column, that.column) &&
+                Objects.equals(keyValidator, that.keyValidator) &&
+                Objects.equals(allPartitions, that.allPartitions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(partitions, column, position, keyValidator, allPartitions);
+    }
 
     static class Builder implements Partitioner.Builder<PartitionerOnColumn>{
 

@@ -23,6 +23,7 @@ import com.stratio.cassandra.lucene.BaseScalaTest
 import com.stratio.cassandra.lucene.BaseScalaTest._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import scala.collection.JavaConverters._
 
 /** Tests for [[Column]].
   *
@@ -76,11 +77,11 @@ class ColumnTest extends BaseScalaTest {
   }
 
   test("parse udt names") {
-    Column.parseUdtNames("c") shouldBe Nil
-    Column.parseUdtNames("c.u") shouldBe List("u")
-    Column.parseUdtNames("c$m") shouldBe Nil
-    Column.parseUdtNames("c.u$m") shouldBe List("u")
-    Column.parseUdtNames("c.u1.u2$m1$m2") shouldBe List("u1", "u2")
+    Column.parseUdtNames("c") shouldBe Nil.asJava
+    Column.parseUdtNames("c.u") shouldBe List("u").asJava
+    Column.parseUdtNames("c$m") shouldBe Nil.asJava
+    Column.parseUdtNames("c.u$m") shouldBe List("u").asJava
+    Column.parseUdtNames("c.u1.u2$m1$m2") shouldBe List("u1", "u2").asJava
   }
 
   test("add column") {

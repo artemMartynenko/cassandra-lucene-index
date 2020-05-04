@@ -19,6 +19,7 @@ import com.stratio.cassandra.lucene.BaseScalaTest
 import com.stratio.cassandra.lucene.BaseScalaTest.int32
 import org.apache.cassandra.db.DecoratedKey
 import org.apache.cassandra.dht.Murmur3Partitioner
+import scala.collection.JavaConverters._
 
 /** Tests for [[Partitioner]].
   *
@@ -31,11 +32,11 @@ class PartitionerTest extends BaseScalaTest {
   }
 
   test("num partitions with none partitioner") {
-    new PartitionerOnNone().allPartitions shouldBe List(0)
+    new PartitionerOnNone().allPartitions shouldBe List(0).asJava
   }
 
   test("num partitions with token partitioner") {
-    new PartitionerOnToken(4).allPartitions shouldBe List(0, 1, 2, 3)
+    new PartitionerOnToken(4).allPartitions shouldBe List(0, 1, 2, 3).asJava
   }
 
   def key(n: Int): DecoratedKey = Murmur3Partitioner.instance.decorateKey(int32.decompose(n))

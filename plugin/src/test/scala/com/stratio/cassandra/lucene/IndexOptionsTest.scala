@@ -51,13 +51,13 @@ class IndexOptionsTest extends BaseScalaTest {
   test("parse refresh seconds option with failing zero value") {
     intercept[IndexException] {
       parseRefresh(Map(REFRESH_SECONDS_OPTION -> "0").asJava)
-    }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be strictly positive, found: 0.0"
+    }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be a strictly positive, found: 0.0"
   }
 
   test("parse refresh seconds option with failing negative value") {
     intercept[IndexException] {
       parseRefresh(Map(REFRESH_SECONDS_OPTION -> "-1").asJava)
-    }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be strictly positive, found: -1.0"
+    }.getMessage shouldBe s"'$REFRESH_SECONDS_OPTION' must be a strictly positive, found: -1.0"
   }
 
   // RAM buffer MB option tests
@@ -85,13 +85,13 @@ class IndexOptionsTest extends BaseScalaTest {
   test("parse RAM buffer MB option with failing zero value") {
     intercept[IndexException] {
       parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "0").asJava)
-    }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be strictly positive, found: 0"
+    }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be a strictly positive, found: 0"
   }
 
   test("parse RAM buffer MB option with failing negative value") {
     intercept[IndexException] {
       parseRamBufferMB(Map(RAM_BUFFER_MB_OPTION -> "-1").asJava)
-    }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be strictly positive, found: -1"
+    }.getMessage shouldBe s"'$RAM_BUFFER_MB_OPTION' must be a strictly positive, found: -1"
   }
 
   // Max merge MB option tests
@@ -119,13 +119,13 @@ class IndexOptionsTest extends BaseScalaTest {
   test("parse max merge MB option with failing zero value") {
     intercept[IndexException] {
       parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "0").asJava)
-    }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be strictly positive, found: 0"
+    }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be a strictly positive, found: 0"
   }
 
   test("parse max merge MB option with failing negative value") {
     intercept[IndexException] {
       parseMaxMergeMB(Map(MAX_MERGE_MB_OPTION -> "-1").asJava)
-    }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be strictly positive, found: -1"
+    }.getMessage shouldBe s"'$MAX_MERGE_MB_OPTION' must be a strictly positive, found: -1"
   }
 
   // Max cached MB option tests
@@ -153,13 +153,13 @@ class IndexOptionsTest extends BaseScalaTest {
   test("parse max cached MB option with failing zero value") {
     intercept[IndexException] {
       parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "0").asJava)
-    }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be strictly positive, found: 0"
+    }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be a strictly positive, found: 0"
   }
 
   test("parse max cached MB option with failing negative value") {
     intercept[IndexException] {
       parseMaxCachedMB(Map(MAX_CACHED_MB_OPTION -> "-1").asJava)
-    }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be strictly positive, found: -1"
+    }.getMessage shouldBe s"'$MAX_CACHED_MB_OPTION' must be a strictly positive, found: -1"
   }
 
   // Indexing threads option tests
@@ -219,13 +219,13 @@ class IndexOptionsTest extends BaseScalaTest {
   test("parse indexing queues size option with failing zero value") {
     intercept[IndexException] {
       parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "0").asJava)
-    }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be strictly positive, found: 0"
+    }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be a strictly positive, found: 0"
   }
 
   test("parse indexing queues size option with failing negative value") {
     intercept[IndexException] {
       parseIndexingQueuesSize(Map(INDEXING_QUEUES_SIZE_OPTION -> "-1").asJava)
-    }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be strictly positive, found: -1"
+    }.getMessage shouldBe s"'$INDEXING_QUEUES_SIZE_OPTION' must be a strictly positive, found: -1"
   }
 
   // Excluded data centers size option tests
@@ -235,21 +235,21 @@ class IndexOptionsTest extends BaseScalaTest {
   }
 
   test("parse excluded data centers option with empty list") {
-    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "").asJava) shouldBe List()
+    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "").asJava) shouldBe List().asJava
   }
 
   test("parse excluded data centers option with singleton list") {
-    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "dc1").asJava) shouldBe List("dc1")
+    parseExcludedDataCenters(Map(EXCLUDED_DATA_CENTERS_OPTION -> "dc1").asJava) shouldBe List("dc1").asJava
   }
 
   test("parse excluded data centers option with multiple list") {
     val options = Map(EXCLUDED_DATA_CENTERS_OPTION -> " dc1,dc2 ")
-    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2")
+    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2").asJava
   }
 
   test("parse excluded data centers option with multiple list and spaces") {
     val options = Map(EXCLUDED_DATA_CENTERS_OPTION -> " dc1 , dc2 ")
-    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2")
+    parseExcludedDataCenters(options.asJava) shouldBe List("dc1", "dc2").asJava
   }
 
   // Partitioner option tests

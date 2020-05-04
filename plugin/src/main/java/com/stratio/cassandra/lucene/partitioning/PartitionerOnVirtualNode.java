@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -161,6 +162,26 @@ public class PartitionerOnVirtualNode implements Partitioner{
         return partitionPerBound.entrySet().stream()
                 .filter(boundsIntegerEntry -> boundsIntegerEntry.getKey().contains(token))
                 .collect(Collectors.toList()).get(0).getValue();
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartitionerOnVirtualNode that = (PartitionerOnVirtualNode) o;
+        return vnodes_per_partition == that.vnodes_per_partition &&
+                numTokens == that.numTokens &&
+                partition == that.partition &&
+                numPartitions == that.numPartitions &&
+                Objects.equals(tokens, that.tokens) &&
+                Objects.equals(partitionPerBound, that.partitionPerBound) &&
+                Objects.equals(allPartitions, that.allPartitions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vnodes_per_partition, tokens, numTokens, partitionPerBound, partition, numPartitions, allPartitions);
     }
 
     /** {@link PartitionerOnVirtualNode} builder. */

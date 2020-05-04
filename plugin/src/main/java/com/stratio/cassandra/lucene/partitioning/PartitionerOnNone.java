@@ -6,6 +6,7 @@ import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.ReadCommand;
 
 import java.util.List;
+import java.util.Objects;
 
 /**{@link Partitioner} with no action, equivalent to just don't partitioning the index.
  *
@@ -42,6 +43,19 @@ public class PartitionerOnNone implements Partitioner{
         return allPartitions;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartitionerOnNone that = (PartitionerOnNone) o;
+        return numPartitions == that.numPartitions &&
+                Objects.equals(allPartitions, that.allPartitions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numPartitions, allPartitions);
+    }
 
     /** {@link PartitionerOnNone} builder. */
     static class Builder implements Partitioner.Builder<PartitionerOnNone>{

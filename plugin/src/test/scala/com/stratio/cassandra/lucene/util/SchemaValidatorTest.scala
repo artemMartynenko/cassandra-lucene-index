@@ -15,11 +15,14 @@
  */
 package com.stratio.cassandra.lucene.util
 
+import java.util.Optional
+
 import com.stratio.cassandra.lucene.BaseScalaTest
 import com.stratio.cassandra.lucene.BaseScalaTest._
 import com.stratio.cassandra.lucene.util.SchemaValidator._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
 import scala.collection.JavaConverters._
 
 /** Tests for [[SchemaValidator]].
@@ -89,77 +92,77 @@ class SchemaValidatorTest extends BaseScalaTest {
   }
 
   test("child regular") {
-    childType(utf8, "") shouldBe None
+    childType(utf8, "") shouldBe Optional.empty()
   }
 
   test("child UDT") {
     val userType = udt(List("a", "b"), List(utf8, int32))
-    childType(userType, "a") shouldBe Some(utf8)
-    childType(userType, "b") shouldBe Some(int32)
-    childType(userType, "c") shouldBe None
+    childType(userType, "a") shouldBe Optional.of(utf8)
+    childType(userType, "b") shouldBe Optional.of(int32)
+    childType(userType, "c") shouldBe Optional.empty()
   }
 
   test("child regular set") {
     val setType = set(utf8, true)
-    childType(setType, "a") shouldBe None
+    childType(setType, "a") shouldBe Optional.empty()
   }
 
   test("child UDT set") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val setType = set(userType, true)
-    childType(setType, "a") shouldBe Some(utf8)
-    childType(setType, "b") shouldBe Some(int32)
-    childType(setType, "c") shouldBe None
+    childType(setType, "a") shouldBe Optional.of(utf8)
+    childType(setType, "b") shouldBe Optional.of(int32)
+    childType(setType, "c") shouldBe Optional.empty()
   }
 
   test("child frozen UDT set") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val setType = set(userType, false)
-    childType(setType, "a") shouldBe Some(utf8)
-    childType(setType, "b") shouldBe Some(int32)
-    childType(setType, "c") shouldBe None
+    childType(setType, "a") shouldBe Optional.of(utf8)
+    childType(setType, "b") shouldBe Optional.of(int32)
+    childType(setType, "c") shouldBe Optional.empty()
   }
 
   test("child regular list") {
     val listType = list(utf8, true)
-    childType(listType, "a") shouldBe None
+    childType(listType, "a") shouldBe Optional.empty()
   }
 
   test("child UDT list") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val listType = list(userType, true)
-    childType(listType, "a") shouldBe Some(utf8)
-    childType(listType, "b") shouldBe Some(int32)
-    childType(listType, "c") shouldBe None
+    childType(listType, "a") shouldBe Optional.of(utf8)
+    childType(listType, "b") shouldBe Optional.of(int32)
+    childType(listType, "c") shouldBe Optional.empty()
   }
 
   test("child frozen UDT list") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val listType = list(userType, false)
-    childType(listType, "a") shouldBe Some(utf8)
-    childType(listType, "b") shouldBe Some(int32)
-    childType(listType, "c") shouldBe None
+    childType(listType, "a") shouldBe Optional.of(utf8)
+    childType(listType, "b") shouldBe Optional.of(int32)
+    childType(listType, "c") shouldBe Optional.empty()
   }
 
   test("child regular map") {
     val mapType = map(utf8, utf8, true)
-    childType(mapType, "a") shouldBe None
+    childType(mapType, "a") shouldBe Optional.empty()
   }
 
   test("child UDT map") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val mapType = map(utf8, userType, true)
-    childType(mapType, "a") shouldBe Some(utf8)
-    childType(mapType, "b") shouldBe Some(int32)
-    childType(mapType, "c") shouldBe None
+    childType(mapType, "a") shouldBe Optional.of(utf8)
+    childType(mapType, "b") shouldBe Optional.of(int32)
+    childType(mapType, "c") shouldBe Optional.empty()
   }
 
   test("child frozen UDT map") {
     val userType = udt(List("a", "b"), List(utf8, int32))
     val mapType = map(utf8, userType, false)
-    childType(mapType, "a") shouldBe Some(utf8)
-    childType(mapType, "b") shouldBe Some(int32)
-    childType(mapType, "c") shouldBe None
+    childType(mapType, "a") shouldBe Optional.of(utf8)
+    childType(mapType, "b") shouldBe Optional.of(int32)
+    childType(mapType, "c") shouldBe Optional.empty()
   }
 
 
