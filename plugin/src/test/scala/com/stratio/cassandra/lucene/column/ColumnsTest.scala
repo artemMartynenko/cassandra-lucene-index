@@ -108,6 +108,6 @@ class ColumnsTest extends BaseScalaTest {
     val columns = Columns.of(
       new  Column("c1"),
       new  Column("c2").withUDTName("u1").withMapName("m1").withValue(7))
-    columns.toString shouldBe "Columns{c1=None, c2.u1$m1=Some(7)}"
+    columns.toString shouldBe "Columns{c1=Column{cell='c1', field='c1', value=Optional.empty}, c2.u1$m1=Column{cell='c2', field='c2.u1$m1', value=Optional[7]}}"
   }
 }

@@ -167,5 +167,26 @@ public class PartitionerOnColumn implements Partitioner{
             }
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Builder builder = (Builder) o;
+            return partitions == builder.partitions &&
+                    Objects.equals(column, builder.column);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(partitions, column);
+        }
+
+        @Override
+        public String toString() {
+            return "Builder{" +
+                    "partitions=" + partitions +
+                    ", column='" + column + '\'' +
+                    '}';
+        }
     }
 }

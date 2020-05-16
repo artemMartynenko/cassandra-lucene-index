@@ -66,5 +66,16 @@ public class PartitionerOnNone implements Partitioner{
         public PartitionerOnNone build(CFMetaData metaData) {
             return new PartitionerOnNone();
         }
+
+        @Override
+        public int hashCode() {
+            return 313131313;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof PartitionerOnNone.Builder;
+        }
+
     }
 }

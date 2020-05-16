@@ -222,11 +222,8 @@ public class Column {
     public String toString() {
         return "Column{" +
                 "cell='" + cell + '\'' +
-                ", udt='" + udt + '\'' +
-                ", map='" + map + '\'' +
-                ", value=" + value +
-                ", mapper='" + mapper + '\'' +
                 ", field='" + field + '\'' +
+                ", value=" + value +
                 '}';
     }
 }

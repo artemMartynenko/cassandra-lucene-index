@@ -96,7 +96,7 @@ class ColumnTest extends BaseScalaTest {
 
   test("toString with default attributes") {
     new Column("cell").toString shouldBe
-      s"Column{cell=cell, field=cell, value=None}"
+      s"Column{cell='cell', field='cell', value=Optional.empty}"
   }
 
   test("toString with all attributes") {
@@ -107,7 +107,7 @@ class ColumnTest extends BaseScalaTest {
       .withMapName("m2")
       .withValue(5)
       .toString shouldBe
-      "Column{cell=cell, field=cell.u1.u2$m1$m2, value=Some(5)}"
+      "Column{cell='cell', field='cell.u1.u2$m1$m2', value=Optional[5]}"
   }
 
   test("compose with basic types") {

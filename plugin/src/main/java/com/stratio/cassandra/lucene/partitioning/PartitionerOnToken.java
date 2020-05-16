@@ -105,5 +105,25 @@ public class PartitionerOnToken implements Partitioner {
         public PartitionerOnToken build(CFMetaData metaData) {
             return new PartitionerOnToken(partitions);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Builder builder = (Builder) o;
+            return partitions == builder.partitions;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(partitions);
+        }
+
+        @Override
+        public String toString() {
+            return "Builder{" +
+                    "partitions=" + partitions +
+                    '}';
+        }
     }
 }

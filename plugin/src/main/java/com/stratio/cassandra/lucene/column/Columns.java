@@ -125,7 +125,7 @@ public class Columns {
     @Override
     public String toString() {
         MoreObjects.ToStringHelper helper = MoreObjects.toStringHelper(this.getClass());
-        columns.forEach(column -> helper.add(column.getField(), column.getValue()));
+        columns.forEach(column -> helper.add(column.getField(), column));
         return helper.toString();
     }
 

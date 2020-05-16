@@ -199,6 +199,27 @@ public class PartitionerOnVirtualNode implements Partitioner{
             return new PartitionerOnVirtualNode(vnodes_per_partition
                     , StorageService.instance.getLocalTokens().stream().sorted().collect(Collectors.toList()));
         }
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Builder builder = (Builder) o;
+            return vnodes_per_partition == builder.vnodes_per_partition;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(vnodes_per_partition);
+        }
+
+        @Override
+        public String toString() {
+            return "Builder{" +
+                    "vnodes_per_partition=" + vnodes_per_partition +
+                    '}';
+        }
     }
 
 }
