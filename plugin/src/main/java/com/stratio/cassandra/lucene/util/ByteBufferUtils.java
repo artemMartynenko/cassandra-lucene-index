@@ -143,7 +143,7 @@ public class ByteBufferUtils {
      * @return a {@link ByteBuffer} representing `bbs`
      */
     public static ByteBuffer compose(ByteBuffer... bbs){
-        int totalLength = Arrays.stream(bbs).map(ByteBuffer::remaining).reduce((integer, integer2) -> integer  + integer + 2).get();
+        int totalLength = Arrays.stream(bbs).map(ByteBuffer::remaining).reduce((integer, integer2) -> integer  + integer + 2).orElse(2);
         ByteBuffer out = ByteBuffer.allocate(totalLength);
         ByteBufferUtil.writeShortLength(out, bbs.length);
         for(ByteBuffer bb: bbs){

@@ -92,9 +92,10 @@ public class ColumnsMapper {
         AbstractType<?> nameType = set.nameComparator();
         ByteBuffer bb = ByteBufferUtil.clone(value);
         Columns columns = Columns.empty();
-        for(int i = 0 ; i < frozenCollectionSize(bb); i++){
+        int size = frozenCollectionSize(bb);
+        for(int i = 0 ; i < size; i++){
             ByteBuffer itemValue = frozenCollectionValue(bb);
-            columns = columns.plus(columns(column, nameType, itemValue));
+            columns.plus(columns(column, nameType, itemValue));
         }
         return columns;
     }
@@ -104,9 +105,10 @@ public class ColumnsMapper {
         ByteBuffer bb = ByteBufferUtil.clone(value);
         //TODO: rewrite columns class for making less copies
         Columns columns = Columns.empty();
-        for (int i = 0; i < frozenCollectionSize(bb); i++) {
+        int size = frozenCollectionSize(bb);
+        for (int i = 0; i < size; i++) {
             ByteBuffer itemValue = frozenCollectionValue(bb);
-            columns = columns.plus(columns(column, valueType, itemValue));
+            columns.plus(columns(column, valueType, itemValue));
         }
         return columns;
     }
@@ -117,14 +119,15 @@ public class ColumnsMapper {
         AbstractType<?> itemValuesType = map.valueComparator();
         ByteBuffer bb = ByteBufferUtil.clone(value);
         Columns columns = Columns.empty();
-        for (int i = 0; i < frozenCollectionSize(bb); i++) {
+        int size = frozenCollectionSize(bb);
+        for (int i = 0; i < size; i++) {
             ByteBuffer itemKey = frozenCollectionValue(bb);
             ByteBuffer itemValue = frozenCollectionValue(bb);
             String itemName = itemKeysType.compose(itemKey).toString();
             Column keyColumn = column.withUDTName(Column.MAP_KEY_SUFFIX).withValue(itemKey, itemKeysType);
-            Columns valueColumn = columns(column.withUDTName(Column.MAP_KEY_SUFFIX), itemValuesType, itemValue);
+            Columns valueColumn = columns(column.withUDTName(Column.MAP_VALUE_SUFFIX), itemValuesType, itemValue);
             Columns entryColumn = columns(column.withMapName(itemName), itemValuesType, itemValue);
-            columns = keyColumn.at(valueColumn).plus(entryColumn).plus(columns);
+            columns = columns.plus(keyColumn.at(valueColumn)).plus(entryColumn);
         }
         return columns;
     }
@@ -138,7 +141,7 @@ public class ColumnsMapper {
                 String itemName = udt.fieldNameAsString(i);
                 AbstractType<?> itemType = udt.fieldType(i);
                 Column itemColumn =column.withUDTName(itemName);
-                columns = columns(itemColumn, itemType, itemValue).plus(columns);
+                columns.plus(columns(itemColumn, itemType, itemValue));
             }
         }
         return columns;
@@ -158,7 +161,7 @@ public class ColumnsMapper {
               String itemName = String.valueOf(i);
               AbstractType<?> itemType = tupleType.type(i);
               Column itemColumn = column.withUDTName(itemName);
-              columns = columns(itemColumn, itemType, itemValue).plus(columns);
+              columns.plus(columns(itemColumn, itemType, itemValue));
           }
       }
       return columns;
