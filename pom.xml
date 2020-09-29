@@ -23,11 +23,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.stratio</groupId>
-        <artifactId>parent</artifactId>
-        <version>0.9.0</version>
-    </parent>
+<!--    <parent>-->
+<!--        <groupId>com.stratio</groupId>-->
+<!--        <artifactId>parent</artifactId>-->
+<!--        <version>0.9.0</version>-->
+<!--    </parent>-->
     <inceptionYear>2014</inceptionYear>
     <packaging>pom</packaging>
     <groupId>com.stratio.cassandra</groupId>
@@ -49,12 +49,12 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>https://github.com/Stratio/cassandra-lucene-index</url>
-        <connection>scm:git:git:@github.com:Stratio/cassandra-lucene-index.git</connection>
-        <developerConnection>scm:git:git@github.com:Stratio/cassandra-lucene-index.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+<!--    <scm>-->
+<!--        <url>https://github.com/Stratio/cassandra-lucene-index</url>-->
+<!--        <connection>scm:git:git:@github.com:Stratio/cassandra-lucene-index.git</connection>-->
+<!--        <developerConnection>scm:git:git@github.com:Stratio/cassandra-lucene-index.git</developerConnection>-->
+<!--        <tag>HEAD</tag>-->
+<!--    </scm>-->
 
     <developers>
         <developer>
@@ -92,6 +92,7 @@
         <scalatest.version>3.0.1</scalatest.version>
         <skipITs>false</skipITs>
         <skipTests>false</skipTests>
+        <nexus.url>https://nexus.volvo.mito:8443</nexus.url>
     </properties>
     <build>
         <plugins>
@@ -144,4 +145,30 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>c4isr.nexus.public</id>
+            <url>${nexus.url}/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>c4isr.nexus.public</id>
+            <url>${nexus.url}/repository/maven-public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>c4isr.nexus.releases</id>
+            <url>${nexus.url}/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>c4isr.nexus.snapshots</id>
+            <url>${nexus.url}/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>

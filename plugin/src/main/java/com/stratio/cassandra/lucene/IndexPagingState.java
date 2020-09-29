@@ -14,7 +14,6 @@ import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.partitions.PartitionIterator;
 import org.apache.cassandra.dht.AbstractBounds;
-import org.apache.cassandra.index.Index;
 import org.apache.cassandra.service.LuceneStorageProxy;
 import org.apache.cassandra.service.pager.PagingState;
 
@@ -165,8 +164,8 @@ public class IndexPagingState {
 
         ColumnFamilyStore cfs = Keyspace.open(command.metadata().ksName).getColumnFamilyStore(command.metadata().cfName);
         for(RowFilter.Expression expression: command.rowFilter().getExpressions()){
-            for(Index index: cfs.indexManager.listIndexes()){
-                if(index instanceof com.stratio.cassandra.lucene.Index && index.supportsExpression(expression.column(), expression.operator())){
+            for(org.apache.cassandra.index.Index index: cfs.indexManager.listIndexes()){
+                if(index instanceof Index && index.supportsExpression(expression.column(), expression.operator())){
                     return expression;
                 }
             }
